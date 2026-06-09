@@ -1,20 +1,33 @@
-import { Geist, Geist_Mono, Noto_Serif } from "next/font/google"
+import type { Metadata } from "next"
+import { Syne, JetBrains_Mono } from "next/font/google"
 
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import { STORAGE_KEY } from "@/lib/bento-theme"
 import { cn } from "@/lib/utils"
 
-const notoSerif = Noto_Serif({ subsets: ["latin"], variable: "--font-serif" })
+/* Runs before first paint: apply the saved palette (hue + paper mode) to
+   <body> so a reload doesn't flash the default dark-lime theme first. */
+const themeScript = `(function(){try{var s=JSON.parse(localStorage.getItem(${JSON.stringify(
+  STORAGE_KEY
+)}));if(!s)return;if(s.h!=null)document.body.style.setProperty('--base-h',s.h);if(s.mode==='light')document.body.setAttribute('data-theme','paper');}catch(e){}})();`
 
-const fontSans = Geist({
+const syne = Syne({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-syne",
 })
 
-const fontMono = Geist_Mono({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  weight: ["400", "500", "700"],
+  variable: "--font-jbmono",
 })
+
+export const metadata: Metadata = {
+  title: "WIRUNROM — Full-Stack Developer",
+  description:
+    "Wirunrom “Heart” Wankasemsan — senior full-stack developer building production ordering, payments, POS and cloud systems.",
+}
 
 export default function RootLayout({
   children,
@@ -22,19 +35,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn(
-        "antialiased",
-        fontSans.variable,
-        fontMono.variable,
-        "font-serif",
-        notoSerif.variable
-      )}
-    >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className={cn("bento ds", syne.variable, jetbrainsMono.variable)}
+      >
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {children}
       </body>
     </html>
   )
