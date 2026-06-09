@@ -1,21 +1,16 @@
-# Next.js template
+# WIRUNROM
 
-This is a Next.js template with shadcn/ui.
+I'm "Heart" Wirunrom Wankasemsan — a full-stack developer in Chiang Mai.
 
-## Adding components
+I build production systems end to end: food ordering & payments, back-office
+tools, POS integration, and the cloud infra that keeps it running. Currently
+@ Infogrammer. Open to new work.
 
-To add components to your app, run the following command:
+- Site — [wirunrom.com](https://wirunrom.com)
+- GitHub — [@wirunrom](https://github.com/wirunrom)
+- LinkedIn — [in/wirunrom](https://www.linkedin.com/in/wirunrom/)
+- Email — wirunrom@gmail.com
 
-```bash
-npx shadcn@latest add button
-```
+---
 
-This will place the ui components in the `components` directory.
-
-## Using components
-
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
-```
+Nice to meet you :)

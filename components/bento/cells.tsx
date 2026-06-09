@@ -20,7 +20,7 @@ export function HeroCell() {
         I build production systems end to end — food ordering &amp; payments,
         back-office tools, POS integration, and cloud infra.
         <span className="th m3">
-          Wirunrom “Heart” Wankasemsan · Senior Full-Stack
+          “Heart” Wirunrom Wankasemsan · Senior Full-Stack Developer
         </span>
       </p>
     </section>
@@ -45,8 +45,8 @@ export function FeaturedCell() {
       <div>
         <h2 className="feat-name">Food Ordering Platform</h2>
         <p className="feat-desc m2">
-          Ordering &amp; payments, back-office management, POS integration, plus a
-          legacy .NET MVC → Next.js rebuild and cloud infra.
+          Ordering &amp; payments, back-office management, POS integration, plus
+          a legacy .NET MVC → Next.js rebuild and cloud infra.
         </p>
         <ReadMoreButton study="ledger">Read case study →</ReadMoreButton>
       </div>
@@ -84,8 +84,9 @@ export function ExperienceCell() {
       {EXPERIENCE.map((e) => (
         <div className="exp-item" key={e.role + e.org}>
           <div className="exp-role">{e.role}</div>
-          <div className={`exp-meta${e.current ? "" : " m2"}`}>
-            {e.current ? <span className="ac">{e.org}</span> : e.org} · {e.period}
+          <div className={`exp-meta${e.current ? "" : "m2"}`}>
+            {e.current ? <span className="ac">{e.org}</span> : e.org} ·{" "}
+            {e.period}
           </div>
         </div>
       ))}
@@ -111,7 +112,13 @@ export function WorkCell() {
           </>
         )
         return p.href ? (
-          <a className="work-item" href={p.href} target="_blank" rel="noopener" key={p.name}>
+          <a
+            className="work-item"
+            href={p.href}
+            target="_blank"
+            rel="noopener"
+            key={p.name}
+          >
             {inner}
           </a>
         ) : (
@@ -160,7 +167,11 @@ export function ContactCell() {
           <a href="https://github.com/wirunrom" target="_blank" rel="noopener">
             GitHub
           </a>
-          <a href="https://www.linkedin.com/in/wirunrom/" target="_blank" rel="noopener">
+          <a
+            href="https://www.linkedin.com/in/wirunrom/"
+            target="_blank"
+            rel="noopener"
+          >
             LinkedIn
           </a>
           <ResumeLink />

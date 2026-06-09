@@ -26,7 +26,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "WIRUNROM — Full-Stack Developer",
   description:
-    "Wirunrom “Heart” Wankasemsan — senior full-stack developer building production ordering, payments, POS and cloud systems.",
+    "Wirunrom Wankasemsan — senior full-stack developer building production ordering, payments, POS and cloud systems.",
 }
 
 export default function RootLayout({
