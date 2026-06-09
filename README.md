@@ -1,16 +1,21 @@
-## Hi there 👋
+# Next.js template
 
-<!--
-**wirunrom/wirunrom** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+This is a Next.js template with shadcn/ui.
 
-Here are some ideas to get you started:
+## Adding components
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+To add components to your app, run the following command:
+
+```bash
+npx shadcn@latest add button
+```
+
+This will place the ui components in the `components` directory.
+
+## Using components
+
+To use the components in your app, import them as follows:
+
+```tsx
+import { Button } from "@/components/ui/button";
+```
