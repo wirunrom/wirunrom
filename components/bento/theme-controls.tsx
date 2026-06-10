@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import { BASE_HUE, STORAGE_KEY } from "@/lib/bento-theme"
+import { BASE_HUE, SHUFFLE_ENABLED, STORAGE_KEY } from "@/lib/bento-theme"
 
 type ThemeState = { h: number; mode: "dark" | "light" }
 
@@ -17,7 +17,10 @@ export function ThemeControls() {
   useEffect(() => {
     try {
       const s = localStorage.getItem(STORAGE_KEY)
-      if (s) setTheme(JSON.parse(s))
+      if (!s) return
+      const saved = JSON.parse(s) as ThemeState
+      // While shuffle is parked, keep the saved mode but pin the hue.
+      setTheme({ mode: saved.mode, h: SHUFFLE_ENABLED ? saved.h : BASE_HUE })
     } catch {
       /* ignore */
     }
@@ -25,7 +28,8 @@ export function ThemeControls() {
 
   useEffect(() => {
     const body = document.body
-    body.style.setProperty("--base-h", String(theme.h))
+    const hue = SHUFFLE_ENABLED ? theme.h : BASE_HUE
+    body.style.setProperty("--base-h", String(hue))
     if (theme.mode === "light") body.setAttribute("data-theme", "paper")
     else body.removeAttribute("data-theme")
     try {
@@ -37,17 +41,26 @@ export function ThemeControls() {
 
   return (
     <>
-      <button
-        className="btn accent"
-        title="Rotate the palette"
-        onClick={() => setTheme((s) => ({ ...s, h: +(Math.random() * 360).toFixed(1) }))}
-      >
-        ⚄ Shuffle
-      </button>
-      {Math.round(theme.h) !== BASE_HUE && (
-        <button className="btn" onClick={() => setTheme((s) => ({ ...s, h: BASE_HUE }))}>
-          Reset
-        </button>
+      {SHUFFLE_ENABLED && (
+        <>
+          <button
+            className="btn accent"
+            title="Rotate the palette"
+            onClick={() =>
+              setTheme((s) => ({ ...s, h: +(Math.random() * 360).toFixed(1) }))
+            }
+          >
+            ⚄ Shuffle
+          </button>
+          {Math.round(theme.h) !== BASE_HUE && (
+            <button
+              className="btn"
+              onClick={() => setTheme((s) => ({ ...s, h: BASE_HUE }))}
+            >
+              Reset
+            </button>
+          )}
+        </>
       )}
       <button
         className="btn"

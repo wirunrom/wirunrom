@@ -17,7 +17,11 @@ export const EXPERIENCE: Experience[] = [
   { role: "Full-Stack Developer · Intern", org: "CMEx", period: "2020" },
 ]
 
-export const EDUCATION = "Software Engineering · Payap University · '24"
+export const EDUCATION = {
+  degree: "Software Engineering",
+  school: "Payap University",
+  year: "2021 - 2024",
+}
 
 export type Project = {
   name: string

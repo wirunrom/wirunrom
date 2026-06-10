@@ -19,9 +19,9 @@ export function HeroCell() {
       <p className="hero-tag m2">
         I build production systems end to end — food ordering &amp; payments,
         back-office tools, POS integration, and cloud infra.
-        <span className="th m3">
+        {/* <span className="th m3">
           “Heart” Wirunrom Wankasemsan · Senior Full-Stack Developer
-        </span>
+        </span> */}
       </p>
     </section>
   )
@@ -58,22 +58,6 @@ export function FeaturedCell() {
   )
 }
 
-/* 03 · NOW */
-export function NowCell() {
-  return (
-    <section className="cell c-now">
-      <span className="label m3">(02) — Now</span>
-      <div>
-        <div className="now-line">Building ordering &amp; POS systems</div>
-        <div className="now-sub m2">@ Infogrammer · Chiang Mai</div>
-      </div>
-      <span className="now-avail">
-        <span className="dot" /> Open to new work
-      </span>
-    </section>
-  )
-}
-
 /* 05 · EXPERIENCE */
 export function ExperienceCell() {
   return (
@@ -90,8 +74,19 @@ export function ExperienceCell() {
           </div>
         </div>
       ))}
-      <div className="exp-edu m2">
-        <span className="ac">EDU</span> · {EDUCATION}
+    </section>
+  )
+}
+
+/* 02 · EDUCATION */
+export function EducationCell() {
+  return (
+    <section className="cell c-edu">
+      <span className="label m3">(02) — Education</span>
+      <div className="push">
+        <div className="edu-degree">{EDUCATION.degree}</div>
+        <div className="edu-school m2">{EDUCATION.school}</div>
+        <div className="edu-year m3">{EDUCATION.year}</div>
       </div>
     </section>
   )

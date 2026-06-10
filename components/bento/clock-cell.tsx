@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react"
 
-/** 04 · live Chiang Mai (GMT+7) clock. */
+import { ThemeControls } from "./theme-controls"
+
+/* 04 · CLOCK + display settings (theme controls live here — they're a utility,
+   not portfolio content, so they share this cell instead of taking their own). */
 export function ClockCell() {
   const [time, setTime] = useState("--:--:--")
 
@@ -21,10 +24,16 @@ export function ClockCell() {
 
   return (
     <section className="cell c-clock">
-      <span className="label m3">Local time</span>
-      <div className="push">
+      <div>
+        <span className="label m3">Local time</span>
         <div className="clock-time">{time}</div>
         <div className="clock-zone m3">Chiang Mai · TH · GMT+7</div>
+      </div>
+      <div className="clock-theme">
+        <span className="label m3">Theme</span>
+        <div className="set-controls">
+          <ThemeControls />
+        </div>
       </div>
     </section>
   )

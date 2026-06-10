@@ -2,26 +2,24 @@ import { BentoBoard } from "@/components/bento/bento-board"
 import {
   CapabilitiesCell,
   ContactCell,
+  EducationCell,
   ExperienceCell,
   FeaturedCell,
   HeroCell,
-  NowCell,
   WorkCell,
 } from "@/components/bento/cells"
 import { ClockCell } from "@/components/bento/clock-cell"
+import { MascotLayer } from "@/components/bento/mascot-layer"
 import { ModalProvider } from "@/components/bento/modal-provider"
-import { RoamingCat } from "@/components/bento/roaming-cat"
-import { Topbar } from "@/components/bento/topbar"
 
 export default function Page() {
   return (
     <ModalProvider>
       <div className="stage">
-        <Topbar />
         <BentoBoard>
           <HeroCell />
           <FeaturedCell />
-          <NowCell />
+          <EducationCell />
           <ClockCell />
           <ExperienceCell />
           <WorkCell />
@@ -29,7 +27,7 @@ export default function Page() {
           <ContactCell />
         </BentoBoard>
       </div>
-      <RoamingCat />
+      <MascotLayer />
     </ModalProvider>
   )
 }
