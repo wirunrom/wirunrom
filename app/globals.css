@@ -589,13 +589,9 @@ a.cell:hover .arr {
   bottom: 0;
   width: 52px;
   height: 48px;
-  transform: translateY(115%);
-  transition: transform 0.5s var(--ease-out);
   pointer-events: auto;
   cursor: pointer;
-}
-.cat-peek.up {
-  transform: translateY(38%);
+  /* hidden initially via the 0-size clip; GSAP owns the peek transform (yPercent) */
 }
 .creature-cat-clip .face {
   transition: transform 0.16s var(--ease-out);
@@ -716,13 +712,15 @@ a.cell:hover .arr {
 }
 
 .modal {
+  /* hue matches the cell that opened it (offset passed in via --modal-h-off) */
+  --modal-h: calc(var(--base-h) + var(--modal-h-off, 0));
   width: min(620px, 100%);
   max-height: 86vh;
   overflow-y: auto;
   position: relative;
-  background: oklch(var(--L-cell) var(--C-cell) var(--base-h));
-  border: 1px solid oklch(var(--L-br) var(--C-br) var(--base-h) / 0.55);
-  color: oklch(var(--L-fg) 0.012 var(--base-h));
+  background: oklch(var(--L-cell) var(--C-cell) var(--modal-h));
+  border: 1px solid oklch(var(--L-br) var(--C-br) var(--modal-h) / 0.55);
+  color: oklch(var(--L-fg) 0.012 var(--modal-h));
   padding: clamp(24px, 4vw, 44px);
   transform: translateY(26px) scale(0.94);
   opacity: 0;
@@ -741,7 +739,7 @@ a.cell:hover .arr {
   font-size: var(--t-micro);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: oklch(var(--L-acc) var(--C-acc) var(--base-h));
+  color: oklch(var(--L-acc) var(--C-acc) var(--modal-h));
 }
 
 .modal h3 {
@@ -769,7 +767,7 @@ a.cell:hover .arr {
   font-size: var(--t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: oklch(var(--L-fg2) 0.015 var(--base-h));
+  color: oklch(var(--L-fg2) 0.015 var(--modal-h));
   display: block;
   margin-bottom: 4px;
 }
@@ -784,12 +782,12 @@ a.cell:hover .arr {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: oklch(var(--L-fg2) 0.01 var(--base-h));
+  color: oklch(var(--L-fg2) 0.01 var(--modal-h));
   padding: 6px;
 }
 
 .modal-close:hover {
-  color: oklch(var(--L-acc) var(--C-acc) var(--base-h));
+  color: oklch(var(--L-acc) var(--C-acc) var(--modal-h));
 }
 
 .modal-links {
@@ -804,8 +802,8 @@ a.cell:hover .arr {
   font-size: var(--t-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: oklch(var(--L-acc) var(--C-acc) var(--base-h));
-  border-bottom: 1px solid oklch(var(--L-acc) var(--C-acc) var(--base-h) / 0.5);
+  color: oklch(var(--L-acc) var(--C-acc) var(--modal-h));
+  border-bottom: 1px solid oklch(var(--L-acc) var(--C-acc) var(--modal-h) / 0.5);
   padding-bottom: 3px;
 }
 
@@ -1052,6 +1050,76 @@ a.cell:hover .arr {
 
   .board:not(.preanim) .cell:nth-child(8) {
     transition-delay: 0.46s;
+  }
+}
+
+/* ───────────── motion layers ─────────────
+   Spotlight + micro-tilt (hover), ambient drift + cursor parallax (the
+   blob), and an inner cascade once the cell reveals. Orchestration lives
+   in BentoBoard. Accent colours come from each cell's own OKLCH hue, so
+   everything follows the theme / shuffle. The cascade is transform-only
+   (opacity stays 1) so no-JS / print still show every word. */
+@media (prefers-reduced-motion: no-preference) {
+  .cell {
+    isolation: isolate;
+  }
+
+  /* decorative blob — GSAP drives drift (transform); parallax sets
+     `translate` (separate property, so they compose without conflict) */
+  .cell > .blob {
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    left: -10%;
+    top: -10%;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      oklch(var(--L-acc) var(--C-acc) var(--h) / 0.16),
+      transparent 70%
+    );
+    filter: blur(40px);
+    transition: translate var(--dur-3) var(--ease-out);
+  }
+
+  /* cursor spotlight — follows --mx/--my that BentoBoard sets on hover */
+  .cell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out);
+    background: radial-gradient(
+      460px circle at var(--mx, 50%) var(--my, 50%),
+      oklch(var(--L-acc) var(--C-acc) var(--h) / 0.12),
+      transparent 60%
+    );
+  }
+  .cell:hover::after {
+    opacity: 1;
+  }
+
+  /* inner cascade — content settles after its cell lands (transform-only) */
+  .board.preanim .cell .st {
+    transform: translateY(10px);
+  }
+  .cell .st {
+    transition: transform 0.55s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 60ms + 200ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell > .blob {
+    animation: none !important;
+    translate: none !important;
+  }
+  .cell .st {
+    transform: none !important;
   }
 }
 
