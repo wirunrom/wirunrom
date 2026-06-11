@@ -12,7 +12,17 @@ export function ReadMoreButton({
 }) {
   const open = useCaseStudy()
   return (
-    <button className="more" onClick={() => open(study)}>
+    <button
+      className="more"
+      onClick={(e) => {
+        // tint the modal with the hue of the cell this button lives in
+        const cell = e.currentTarget.closest<HTMLElement>(".cell")
+        const hOff = cell
+          ? parseFloat(getComputedStyle(cell).getPropertyValue("--h-off")) || 0
+          : 0
+        open(study, hOff)
+      }}
+    >
       {children}
     </button>
   )

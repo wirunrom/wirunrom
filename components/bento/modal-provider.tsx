@@ -10,7 +10,10 @@ import {
 
 import { CASE_STUDIES, type CaseStudyKey } from "@/lib/bento-content"
 
-const ModalContext = createContext<(key: CaseStudyKey) => void>(() => {})
+/** open(key, hueOffset) — hueOffset tints the modal to match the cell it came from. */
+const ModalContext = createContext<(key: CaseStudyKey, hueOffset?: number) => void>(
+  () => {}
+)
 
 /** Open a case-study modal from anywhere inside <ModalProvider>. */
 export function useCaseStudy() {
@@ -19,10 +22,12 @@ export function useCaseStudy() {
 
 export function ModalProvider({ children }: { children: React.ReactNode }) {
   const [key, setKey] = useState<CaseStudyKey | null>(null)
+  const [hueOffset, setHueOffset] = useState(0)
 
-  const open = useCallback((k: CaseStudyKey) => {
+  const open = useCallback((k: CaseStudyKey, hOff = 0) => {
     if (!CASE_STUDIES[k]) return
     setKey(k)
+    setHueOffset(hOff)
     document.body.style.overflow = "hidden"
   }, [])
 
@@ -50,7 +55,12 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
           if (e.target === e.currentTarget) close()
         }}
       >
-        <div className="modal" role="dialog" aria-modal="true">
+        <div
+          className="modal"
+          role="dialog"
+          aria-modal="true"
+          style={{ "--modal-h-off": hueOffset } as React.CSSProperties}
+        >
           <button className="modal-close" aria-label="Close" onClick={close}>
             ✕
           </button>
