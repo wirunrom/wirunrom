@@ -28,18 +28,10 @@ export function BentoBoard({ children }: { children: React.ReactNode }) {
     const coarse = matchMedia("(pointer: coarse)").matches
     const cells = Array.from(board.querySelectorAll<HTMLElement>(".cell"))
 
-    // blob (drift + parallax target) + cascade tags
-    const blobs: HTMLElement[] = []
+    // tag each cell's content blocks for the inner cascade (CSS, one-shot)
     cells.forEach((cell) => {
-      const blob = document.createElement("span")
-      blob.className = "blob"
-      blob.setAttribute("aria-hidden", "true")
-      cell.prepend(blob)
-      blobs.push(blob)
-      // tag the cell's content blocks for the inner cascade (CSS)
       let i = 0
       for (const child of Array.from(cell.children)) {
-        if (child === blob) continue
         ;(child as HTMLElement).style.setProperty("--i", String(i++))
         child.classList.add("st")
       }
@@ -52,9 +44,22 @@ export function BentoBoard({ children }: { children: React.ReactNode }) {
 
     const cleanups: Array<() => void> = []
 
-    // ambient drift — GSAP, randomized so it never loops identically.
-    // Uses transform (xPercent/yPercent/scale); parallax stays on `translate`.
-    if (!reduced) {
+    // The decorative blobs are the only continuous, GPU-heavy layer
+    // (animated blur). Skip them entirely on touch / reduced-motion —
+    // there's no cursor to react to anyway, and animated blur tanks
+    // mobile frame rates. The entrance + cascade above still run.
+    const blobs: HTMLElement[] = []
+    if (!reduced && !coarse) {
+      cells.forEach((cell) => {
+        const blob = document.createElement("span")
+        blob.className = "blob"
+        blob.setAttribute("aria-hidden", "true")
+        cell.prepend(blob)
+        blobs.push(blob)
+      })
+
+      // ambient drift — GSAP, randomized so it never loops identically.
+      // Uses transform (xPercent/yPercent/scale); parallax stays on `translate`.
       blobs.forEach((blob, i) => {
         const tl = gsap.timeline({
           repeat: -1,
@@ -72,10 +77,8 @@ export function BentoBoard({ children }: { children: React.ReactNode }) {
         tl.to(blob, { xPercent: 0, yPercent: 0, scale: 1, duration: 6 })
         cleanups.push(() => tl.kill())
       })
-    }
 
-    // cursor spotlight — track the pointer per cell (CSS handles the glow)
-    if (!reduced && !coarse) {
+      // cursor spotlight — track the pointer per cell (CSS handles the glow)
       cells.forEach((cell) => {
         let frame = 0
         const onMove = (e: PointerEvent) => {
