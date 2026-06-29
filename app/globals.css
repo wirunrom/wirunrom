@@ -842,12 +842,12 @@ a.cell:hover .arr {
 }
 
 .exp-item {
-  padding: clamp(5px, 0.95vh, 11px) 0;
+  padding: clamp(2px, 0.45vh, 6px) 0;
   border-bottom: 1px solid oklch(var(--L-br) var(--C-br) var(--h) / 0.22);
 }
 
 .exp-item:first-of-type {
-  padding-top: clamp(6px, 1vh, 12px);
+  padding-top: clamp(2px, 0.45vh, 6px);
 }
 
 .exp-item:last-of-type {
@@ -857,7 +857,7 @@ a.cell:hover .arr {
 .exp-role {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(0.92rem, 1.25vw, 1.12rem);
+  font-size: clamp(0.9rem, 1.2vw, 1.08rem);
   letter-spacing: -0.01em;
   line-height: 1.1;
 }
@@ -866,7 +866,7 @@ a.cell:hover .arr {
   font-family: var(--font-mono);
   font-size: var(--t-micro);
   letter-spacing: 0.06em;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 /* ───────────── work list ───────────── */
@@ -906,7 +906,7 @@ a.cell:hover .arr {
 }
 
 .cap-item {
-  padding: clamp(5px, 0.8vh, 9px) 0;
+  padding: clamp(2px, 0.5vh, 7px) 0;
   border-bottom: 1px solid oklch(var(--L-br) var(--C-br) var(--h) / 0.22);
 }
 
@@ -922,8 +922,9 @@ a.cell:hover .arr {
 }
 
 .cap-v {
-  font-size: var(--t-small);
-  line-height: 1.35;
+  font-size: clamp(0.66rem, 0.85vw, 0.78rem);
+  line-height: 1.32;
+  margin-top: 2px;
 }
 
 /* ───────────── contact (filled, signal) ───────────── */

@@ -12,7 +12,8 @@ export type Experience = {
 }
 
 export const EXPERIENCE: Experience[] = [
-  { role: "Full-Stack Developer", org: "Infogrammer", period: "2024 — Now", current: true },
+  { role: "Senior Full-Stack Developer", org: "Infogrammer", period: "2024 — Now", current: true },
+  { role: "3D Visualization & Dashboard", org: "Freelance", period: "2024 — 25" },
   { role: "Full-Stack Developer · Intern", org: "AppIntouch", period: "2023" },
   { role: "Full-Stack Developer · Intern", org: "CMEx", period: "2020" },
 ]
@@ -31,7 +32,7 @@ export type Project = {
 
 export const PROJECTS: Project[] = [
   { name: "Finjar", meta: "NEXT · RUST ↗", href: "https://finjar.wirunrom.com/" },
-  { name: "hqr-generate", meta: "REACT · OSS ↗", href: "https://github.com/wirunrom/hqr-generate" },
+  { name: "hqr-generate", meta: "RUST · OSS ↗", href: "https://github.com/wirunrom/hqr-generate" },
   { name: "Internal tools", meta: "@ INFOGRAMMER" },
 ]
 
@@ -44,9 +45,9 @@ export type StackGroup = {
 }
 
 export const STACK: StackGroup[] = [
-  { key: "Frontend", primary: "TypeScript · Next.js · Tailwind", faint: "· React · Vue · Angular" },
-  { key: "Backend", primary: "Node · C# · REST · gRPC · SQL/NoSQL", faint: "· Rust · Go" },
-  { key: "Infra", primary: "Docker · Microservices · Azure · AWS · Networking" },
+  { key: "Frontend", primary: "TypeScript · Next.js · Tailwind", faint: "· Three.js · React · Vue · Angular" },
+  { key: "Backend", primary: "C# · Node · Go · Rust", faint: "· REST · gRPC · MQTT · SQL/NoSQL" },
+  { key: "Infra", primary: "Docker · Microservices · Azure · AWS · CI/CD" },
 ]
 
 export type CaseStudy = {
