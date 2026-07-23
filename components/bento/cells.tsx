@@ -58,6 +58,29 @@ export function FeaturedCell() {
   )
 }
 
+/* 02b · FINJAR — personal flagship (twin of Featured) */
+export function FinjarCell() {
+  return (
+    <section className="cell c-finjar">
+      <div className="row">
+        <span className="label ac">★ Personal · Finjar</span>
+        <span className="label m3">Solo build</span>
+      </div>
+      <div className="finjar-body">
+        <div>
+          <h2 className="finjar-name">Finjar</h2>
+          <p className="finjar-desc m2">
+            Personal finance platform — server-authoritative forecasting,
+            budgets &amp; explainable AI insights. Built end to end on Rust +
+            Next.js.
+          </p>
+        </div>
+        <ReadMoreButton study="finjar">Read case study →</ReadMoreButton>
+      </div>
+    </section>
+  )
+}
+
 /* 05 · EXPERIENCE */
 export function ExperienceCell() {
   return (
@@ -83,10 +106,14 @@ export function EducationCell() {
   return (
     <section className="cell c-edu">
       <span className="label m3">(02) — Education</span>
-      <div className="push">
-        <div className="edu-degree">{EDUCATION.degree}</div>
-        <div className="edu-school m2">{EDUCATION.school}</div>
-        <div className="edu-year m3">{EDUCATION.year}</div>
+      <div className="push edu-list">
+        {EDUCATION.map((s, i) => (
+          <div className={`edu-item${i > 0 ? " m2" : ""}`} key={s.school}>
+            <div className="edu-degree">{s.degree}</div>
+            <div className="edu-school m2">{s.school}</div>
+            <div className="edu-year m3">{s.year}</div>
+          </div>
+        ))}
       </div>
     </section>
   )

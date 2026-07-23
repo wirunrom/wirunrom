@@ -13,16 +13,21 @@ export type Experience = {
 
 export const EXPERIENCE: Experience[] = [
   { role: "Senior Full-Stack Developer", org: "Infogrammer", period: "Jun 2024 — Now", current: true },
-  { role: "Full-Stack Developer", org: "Freelance", period: "Aug 2024 — Jan 25" },
+  { role: "3D Building Viz & Sensor Dashboard", org: "Freelance", period: "Aug 2024 — Jan 2025" },
   { role: "Full-Stack Developer · Intern", org: "AppIntouch", period: "2023" },
   { role: "Full-Stack Developer · Intern", org: "CMEx", period: "2020" },
 ]
 
-export const EDUCATION = {
-  degree: "Software Engineering",
-  school: "Payap University",
-  year: "2021 - 2024",
+export type School = {
+  degree: string
+  school: string
+  year: string
 }
+
+export const EDUCATION: School[] = [
+  { degree: "Software Engineering", school: "Payap University", year: "2021 — 2024" },
+  { degree: "Information Technology · Voc.", school: "Lanna Polytechnic", year: "2019 — 2021" },
+]
 
 export type Project = {
   name: string
@@ -31,7 +36,6 @@ export type Project = {
 }
 
 export const PROJECTS: Project[] = [
-  { name: "Finjar", meta: "NEXT · RUST ↗", href: "https://finjar.wirunrom.com/" },
   { name: "hqr-generate", meta: "RUST · OSS ↗", href: "https://github.com/wirunrom/hqr-generate" },
   { name: "Internal tools", meta: "@ INFOGRAMMER" },
 ]
@@ -46,8 +50,8 @@ export type StackGroup = {
 
 export const STACK: StackGroup[] = [
   { key: "Frontend", primary: "TypeScript · Next.js · Tailwind", faint: "· Three.js · React · Vue · Angular" },
-  { key: "Backend", primary: "C# · Node · Go · Rust", faint: "· REST · gRPC · MQTT · SQL/NoSQL" },
-  { key: "Infra", primary: "Docker · Microservices · Azure · AWS · CI/CD" },
+  { key: "Backend", primary: "C# · Node · Go · Rust", faint: "· REST · gRPC · MQTT · Postgres · Redis · Mongo · MySQL" },
+  { key: "Infra", primary: "Docker · Microservices · Azure · AWS · CI/CD", faint: "· Git · Claude · Codex" },
 ]
 
 export type CaseStudy = {
@@ -68,6 +72,16 @@ export const CASE_STUDIES: Record<string, CaseStudy> = {
       "<p><strong>Stack</strong>Next.js · ASP.NET · Go · PostgreSQL · Redis · REST · gRPC</p>" +
       "<p><strong>Scale</strong>Handles hundreds of thousands of orders every day (around a million order items/day), placed and routed to kitchen displays &amp; POS in production.</p>" +
       "<p><strong>Traffic</strong>Serves millions of requests per day through a gateway front door and containerised microservices.</p>",
+  },
+  finjar: {
+    tag: "Personal Project · Finjar",
+    title: "Personal Finance Platform",
+    body:
+      "<p><strong>Overview</strong>A personal finance platform for tracking income, expenses, recurring transactions, budgets, and longer-term financial plans — built end to end as a solo project.</p>" +
+      "<p><strong>What I built</strong>Server-authoritative forecasting and a monthly financial review, with billing-cycle comparisons and immutable report snapshots so past reviews never drift. Multi-currency support throughout.</p>" +
+      "<p><strong>AI insights</strong>An AI chat wired into the internal financial APIs, generating context-aware, explainable insights and recommendations grounded in the user's real data rather than free-form guesses.</p>" +
+      "<p><strong>Stack</strong>Next.js · Rust (Axum) — a deliberate excuse to build something real in the Rust ecosystem.</p>" +
+      "<p><strong>Live</strong><a href=\"https://finjar.wirunrom.com/\" target=\"_blank\" rel=\"noopener\">finjar.wirunrom.com ↗</a></p>",
   },
 }
 

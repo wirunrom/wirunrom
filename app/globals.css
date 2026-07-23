@@ -207,7 +207,7 @@ a {
   grid-template-areas:
     "hero hero hero feat feat char"
     "hero hero hero feat feat clock"
-    "stat stat work feat feat cap"
+    "stat stat work finjar finjar cap"
     "contact contact contact contact contact contact";
 }
 
@@ -287,6 +287,14 @@ a.cell:hover .arr {
   grid-area: feat;
   --h-off: 168;
   background: oklch(var(--L-cell2) var(--C-cell2) var(--h));
+}
+
+.c-finjar {
+  grid-area: finjar;
+  --h-off: 262;
+  background: oklch(var(--L-cell2) var(--C-cell2) var(--h));
+  justify-content: space-between;
+  container-type: inline-size;
 }
 
 .c-char {
@@ -455,6 +463,38 @@ a.cell:hover .arr {
   opacity: 0.7;
 }
 
+/* ───────────── finjar flagship (twin of featured, wide + short) ───────────── */
+.finjar-body {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(12px, 2vw, 28px);
+  margin-top: auto;
+}
+
+.finjar-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 7cqw, 2.6rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.finjar-desc {
+  font-size: clamp(0.78rem, 0.95vw, 0.95rem);
+  line-height: 1.45;
+  max-width: 46ch;
+  margin: 8px 0 0;
+}
+
+.finjar-body .more {
+  margin-top: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* ───────────── now (replaces boxed character) ───────────── */
 .c-now {
   justify-content: space-between;
@@ -505,6 +545,12 @@ a.cell:hover .arr {
 /* ───────────── education ───────────── */
 .c-edu {
   justify-content: space-between;
+}
+
+.edu-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.4vh, 16px);
 }
 
 .edu-degree {
@@ -1054,6 +1100,10 @@ a.cell:hover .arr {
   .board:not(.preanim) .cell:nth-child(8) {
     transition-delay: 0.46s;
   }
+
+  .board:not(.preanim) .cell:nth-child(9) {
+    transition-delay: 0.52s;
+  }
 }
 
 /* ───────────── motion layers ─────────────
@@ -1142,6 +1192,7 @@ a.cell:hover .arr {
       "hero hero hero hero"
       "feat feat char clock"
       "feat feat stat stat"
+      "finjar finjar finjar finjar"
       "work work cap cap"
       "contact contact contact contact";
   }
@@ -1159,6 +1210,7 @@ a.cell:hover .arr {
     grid-template-areas:
       "hero"
       "feat"
+      "finjar"
       "char"
       "clock"
       "stat"

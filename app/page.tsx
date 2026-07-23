@@ -5,6 +5,7 @@ import {
   EducationCell,
   ExperienceCell,
   FeaturedCell,
+  FinjarCell,
   HeroCell,
   WorkCell,
 } from "@/components/bento/cells"
@@ -19,6 +20,7 @@ export default function Page() {
         <BentoBoard>
           <HeroCell />
           <FeaturedCell />
+          <FinjarCell />
           <EducationCell />
           <ClockCell />
           <ExperienceCell />
