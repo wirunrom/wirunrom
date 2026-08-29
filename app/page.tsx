@@ -9,7 +9,6 @@ import {
   HeroCell,
   WorkCell,
 } from "@/components/bento/cells"
-import { ClockCell } from "@/components/bento/clock-cell"
 import { ModalProvider } from "@/components/bento/modal-provider"
 import { SystemMapBackgroundCanvas } from "@/components/bento/system-map-background-canvas"
 
@@ -23,7 +22,6 @@ export default function Page() {
           <FeaturedCell />
           <FinjarCell />
           <EducationCell />
-          <ClockCell />
           <ExperienceCell />
           <WorkCell />
           <CapabilitiesCell />

@@ -18,9 +18,9 @@ Stack: **Next.js 16 (App Router, Turbopack) · React 19 · TypeScript**. See
 
 - `app/page.tsx` — **server** component; composes the board only.
 - `components/bento/` — one file per piece, split along the **client/server line**:
-  - Static markup → `cells.tsx` (server): Hero / Featured / Now / Experience /
-    Work / Capabilities / Contact.
-  - Interactive islands (`"use client"`): `clock-cell`, `roaming-cat`,
+  - Static markup → `cells.tsx` (server): Hero / Featured / Finjar / Education /
+    Experience / Work / Capabilities / Contact.
+  - Interactive islands (`"use client"`):
     `modal-provider`, `read-more-button`, `resume-link`,
     `bento-board` (entrance reveal).
   - `bento-board` and `modal-provider` are client wrappers that take the

@@ -205,7 +205,7 @@ a {
   grid-template-rows: 1.05fr 1.05fr 1.05fr 0.62fr;
   grid-template-areas:
     "hero hero hero feat feat char"
-    "hero hero hero feat feat clock"
+    "hero hero hero feat feat char"
     "stat stat work finjar finjar cap"
     "contact contact contact contact contact contact";
 }
@@ -327,11 +327,6 @@ a.cell:hover .arr {
 .c-edu {
   grid-area: char;
   --h-off: 92;
-}
-
-.c-clock {
-  grid-area: clock;
-  --h-off: 124;
 }
 
 .c-stat {
@@ -908,27 +903,6 @@ body.bento[data-theme="paper"] .hero-signal.is-ready {
   }
 }
 
-/* ───────────── clock ───────────── */
-.c-clock {
-  justify-content: flex-start;
-}
-
-.clock-time {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(1.5rem, 2.6vw, 2.3rem);
-  font-weight: 500;
-  line-height: 1;
-}
-
-.clock-zone {
-  font-family: var(--font-mono);
-  font-size: var(--t-micro);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-top: 6px;
-}
-
 /* ───────────── experience (replaces stats) ───────────── */
 .c-stat {
   gap: 0;
@@ -1245,7 +1219,7 @@ body.bento[data-theme="paper"] .hero-signal.is-ready {
     grid-auto-rows: minmax(150px, auto);
     grid-template-areas:
       "hero hero hero hero"
-      "feat feat char clock"
+      "feat feat char char"
       "feat feat stat stat"
       "finjar finjar finjar finjar"
       "work work cap cap"
@@ -1267,7 +1241,6 @@ body.bento[data-theme="paper"] .hero-signal.is-ready {
       "feat"
       "finjar"
       "char"
-      "clock"
       "stat"
       "work"
       "cap"
@@ -1555,7 +1528,7 @@ body.bento .board {
     "hero hero hero hero hero hero hero hero hero hero hero hero"
     "feat feat feat feat feat feat feat finjar finjar finjar finjar finjar"
     "stat stat stat stat stat work work work cap cap cap cap"
-    "char char char clock clock clock contact contact contact contact contact contact";
+    "char char char char contact contact contact contact contact contact contact contact";
 }
 
 body.bento .cell {
@@ -1752,7 +1725,7 @@ body.bento[data-theme="paper"] .system-map-background.is-ready {
       "hero hero hero hero"
       "feat feat finjar finjar"
       "feat feat stat stat"
-      "char clock work work"
+      "char char work work"
       "cap cap contact contact";
   }
 
@@ -1772,7 +1745,6 @@ body.bento[data-theme="paper"] .system-map-background.is-ready {
       "feat"
       "finjar"
       "char"
-      "clock"
       "stat"
       "work"
       "cap"

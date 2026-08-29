@@ -10,7 +10,7 @@ export function HeroCell() {
     <section className="cell c-hero" id="top">
       <HeroSignalCanvas />
       <div className="row">
-        <span className="label m3">(01) — Full-Stack Developer</span>
+        <span className="label m3">Full-Stack Developer</span>
         <span className="status">
           <span className="dot" /> Open to work
         </span>
@@ -92,7 +92,7 @@ export function ExperienceCell() {
     <section className="cell c-stat signal-cell" id="experience">
       <FoldSignalCanvas kind="experience" />
       <span className="label m3" style={{ marginBottom: 4 }}>
-        (03) — Experience
+        Experience
       </span>
       {EXPERIENCE.map((e) => (
         <div className="exp-item" key={e.role + e.org}>
@@ -111,7 +111,7 @@ export function ExperienceCell() {
 export function EducationCell() {
   return (
     <section className="cell c-edu">
-      <span className="label m3">(02) — Education</span>
+      <span className="label m3">Education</span>
       <div className="push edu-list">
         {EDUCATION.map((s, i) => (
           <div className={`edu-item${i > 0 ? " m2" : ""}`} key={s.school}>
@@ -166,7 +166,7 @@ export function CapabilitiesCell() {
     <section className="cell c-cap signal-cell">
       <FoldSignalCanvas kind="capabilities" />
       <span className="label m3" style={{ marginBottom: 6 }}>
-        (04) — Stack
+        Stack
       </span>
       {STACK.map((g) => (
         <div className="cap-item" key={g.key}>
