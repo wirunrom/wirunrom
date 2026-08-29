@@ -1764,6 +1764,44 @@ body.bento[data-theme="paper"] .system-map-background.is-ready {
     text-align: left;
     margin-left: 0;
   }
+
+  /* Keep WebGPU canvases in the cell's normal paint order on narrow Safari /
+     resized desktop windows. Blended GPU layers can otherwise composite above
+     later DOM siblings after an offscreen canvas resumes. */
+  body.bento .signal-cell .fold-signal {
+    mix-blend-mode: normal;
+  }
+
+  body.bento .c-contact {
+    flex-wrap: nowrap;
+    gap: clamp(24px, 8vw, 36px);
+  }
+
+  body.bento .c-contact .ct-title {
+    flex: 0 0 auto;
+    width: 100%;
+    font-size: clamp(1.5rem, 7.5vw, 1.9rem);
+  }
+
+  body.bento .c-contact .ct-right {
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 18px;
+  }
+
+  body.bento .c-contact a.email {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  body.bento .c-contact .socials {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
