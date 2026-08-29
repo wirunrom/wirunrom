@@ -62,12 +62,13 @@ body {
   margin: 0;
 }
 
-/* ───────────── theme engine ─────────────
-   Everything derives from --base-h (a single hue).
-   Each cell offsets that hue (--h-off) so the board reads
-   as many related stories. Shuffle rotates --base-h; the
-   whole board turns together and stays harmonic.
-   Dark / light just swap the lightness/chroma sets below. */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ───────────── material tokens ─────────────
+   One locked base hue keeps the editorial surfaces and signals coherent.
+   Individual cells may offset it for subtle depth without changing themes. */
 body.bento {
   /* ---------- TYPE FAMILIES ----------
      Composed here (not :root) because next/font defines --font-syne /
@@ -76,11 +77,9 @@ body.bento {
   --font-mono: var(--font-jbmono), ui-monospace, "SFMono-Regular", Menlo, monospace;
   --font-body: var(--font-syne), system-ui, sans-serif;
 
-  /* Locked palette hue. Shuffle is parked, so this is the board's color.
-     Keep BASE_HUE in lib/bento-theme.ts in sync. */
+  /* Locked palette hue for the single Paper + Signal system. */
   --base-h: 30;
-  /* ── PRIMARY ── the single brand fill. Hero + footer share it,
-     and it rides the hue engine (shuffle/light still work). */
+  /* ── PRIMARY ── the single brand fill shared by hero and footer. */
   --primary-h-off: 28;
   --L-primary: 0.52;
   --C-primary: 0.15;
@@ -212,9 +211,27 @@ a {
 }
 
 .stage {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   height: 100svh;
+}
+
+.system-map-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 700ms var(--ease-out);
+}
+
+.board {
+  position: relative;
+  z-index: 1;
 }
 
 /* ───────────── cell base ───────────── */
@@ -342,6 +359,51 @@ a.cell:hover .arr {
   justify-content: space-between;
   gap: 14px;
   container-type: inline-size;
+  isolation: isolate;
+}
+
+.hero-signal {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.6s var(--ease-out);
+}
+
+.hero-signal.is-ready {
+  opacity: 1;
+}
+
+body.bento[data-theme="paper"] .hero-signal.is-ready {
+  opacity: 0.82;
+  mix-blend-mode: multiply;
+}
+
+.wordmark {
+  transition: opacity 0.35s var(--ease-out);
+}
+
+.c-hero.hero-signal-active > .wordmark {
+  opacity: 0;
+}
+
+.c-hero > .row,
+.c-hero > .wordmark,
+.c-hero > .hero-tag {
+  position: relative;
+  z-index: 2;
+}
+
+.c-hero.hero-signal-active > .blob {
+  opacity: 0;
+}
+
+.c-hero.hero-signal-active::after {
+  display: none;
 }
 
 .wordmark {
@@ -525,21 +587,6 @@ a.cell:hover .arr {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-top: auto;
-}
-
-/* ───────────── display settings (theme controls, inside clock cell) ───────────── */
-.clock-theme {
-  padding-top: clamp(8px, 1.2vh, 14px);
-  border-top: 1px solid oklch(var(--L-br) var(--C-br) var(--h) / 0.22);
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-}
-
-.set-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
 }
 
 /* ───────────── education ───────────── */
@@ -863,7 +910,7 @@ a.cell:hover .arr {
 
 /* ───────────── clock ───────────── */
 .c-clock {
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .clock-time {
@@ -1167,6 +1214,14 @@ a.cell:hover .arr {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-signal {
+    transition: none;
+  }
+
+  .wordmark {
+    transition: none;
+  }
+
   .cell > .blob {
     animation: none !important;
     translate: none !important;
@@ -1436,5 +1491,320 @@ a.cell:hover .arr {
   .rv-scroll {
     padding: 14px;
     gap: 14px;
+  }
+}
+
+/* ============================================================
+   EDITORIAL FOLD — PAPER + SIGNAL
+   One portfolio system: quiet physical surfaces carry the information while
+   WebGPU signal fields reveal the systems underneath.
+   ============================================================ */
+
+.board,
+.cell {
+  transition:
+    background-color 360ms var(--ease-out),
+    border-color 360ms var(--ease-out),
+    color 360ms var(--ease-out),
+    transform 500ms var(--ease-out);
+}
+
+/* The single Editorial Fold composition. */
+body.bento {
+  --L-page: 0.13;
+  --C-page: 0.008;
+  --L-cell: 0.17;
+  --C-cell: 0.01;
+  --L-cell2: 0.17;
+  --C-cell2: 0.01;
+  --L-fg: 0.92;
+  --L-fg2: 0.72;
+  --L-fg3: 0.56;
+  --L-acc: 0.74;
+  --C-acc: 0.18;
+  --L-br: 0.72;
+  --C-br: 0.018;
+  --br-a: 0.27;
+  --signal-orange: #ff7138;
+  --paper-surface: #eee8dc;
+  --paper-ink: #18130f;
+  --fold-panel: rgba(21, 20, 18, 0.7);
+  --fold-panel-hover: rgba(30, 28, 25, 0.82);
+  --fold-hero: rgba(15, 14, 13, 0.16);
+}
+
+body.bento .system-map-background.is-ready {
+  opacity: 0.82;
+  mix-blend-mode: screen;
+}
+
+body.bento .stage {
+  height: auto;
+  min-height: 100svh;
+}
+
+body.bento .board {
+  flex: none;
+  min-height: 100svh;
+  display: grid;
+  gap: 0;
+  padding: 0 clamp(20px, 4vw, 68px) 72px;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: minmax(420px, 52vh) minmax(280px, auto) minmax(250px, auto) minmax(210px, auto);
+  grid-template-areas:
+    "hero hero hero hero hero hero hero hero hero hero hero hero"
+    "feat feat feat feat feat feat feat finjar finjar finjar finjar finjar"
+    "stat stat stat stat stat work work work cap cap cap cap"
+    "char char char clock clock clock contact contact contact contact contact contact";
+}
+
+body.bento .cell {
+  --h-off: 18;
+  min-width: 0;
+  background: var(--fold-panel);
+  border: 0;
+  border-top: 1px solid oklch(var(--L-br) var(--C-br) var(--h) / var(--br-a));
+  border-right: 1px solid oklch(var(--L-br) var(--C-br) var(--h) / 0.18);
+  padding: clamp(18px, 2.4vw, 38px);
+  clip-path: none;
+}
+
+body.bento .cell:hover {
+  transform: none;
+  background: var(--fold-panel-hover);
+}
+
+.fold-signal {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms var(--ease-out);
+}
+
+.signal-cell > :not(.fold-signal):not(.blob) {
+  position: relative;
+  z-index: 2;
+}
+
+body.bento .fold-signal.is-ready {
+  opacity: 0.62;
+}
+
+body.bento .c-stat .fold-signal.is-ready,
+body.bento .c-work .fold-signal.is-ready,
+body.bento .c-cap .fold-signal.is-ready {
+  opacity: 0.82;
+}
+
+body.bento .signal-cell:hover .fold-signal.is-ready,
+body.bento .signal-cell:focus-within .fold-signal.is-ready {
+  opacity: 0.94;
+}
+
+body.bento .c-feat:hover .fold-signal.is-ready,
+body.bento .c-feat:focus-within .fold-signal.is-ready {
+  opacity: 0.82;
+}
+
+body.bento .c-hero {
+  background: var(--fold-hero);
+  border-top: 0;
+  border-right: 0;
+  padding-inline: 0;
+}
+
+body.bento .c-hero .row {
+  border-bottom: 1px solid oklch(var(--L-br) var(--C-br) var(--h) / 0.26);
+  padding: 16px 0;
+}
+
+body.bento .hero-tag {
+  max-width: 58ch;
+  margin-left: auto;
+  text-align: right;
+}
+
+body.bento .c-feat {
+  background: var(--paper-surface);
+  color: var(--paper-ink);
+  border-color: var(--paper-surface);
+}
+
+body.bento .c-feat:hover,
+body.bento .c-feat:focus-within {
+  background: var(--paper-surface);
+  color: var(--paper-ink);
+}
+
+body.bento .c-feat .fold-signal {
+  mix-blend-mode: multiply;
+}
+
+body.bento .c-feat .ac,
+body.bento .c-feat .m2,
+body.bento .c-feat .m3,
+body.bento .c-feat .more {
+  color: inherit;
+}
+
+body.bento .c-feat .more {
+  border-color: currentColor;
+}
+
+body.bento .c-feat .more:hover,
+body.bento .c-feat .more:focus-visible {
+  background: var(--signal-orange);
+  color: var(--paper-ink);
+  border-color: var(--signal-orange);
+}
+
+body.bento .c-finjar .fold-signal,
+body.bento .c-stat .fold-signal,
+body.bento .c-work .fold-signal,
+body.bento .c-cap .fold-signal {
+  mix-blend-mode: screen;
+}
+
+body.bento .c-feat .fold-signal,
+body.bento .c-contact .fold-signal,
+body.bento[data-theme="paper"] .fold-signal {
+  mix-blend-mode: multiply;
+}
+
+body.bento .feat-name,
+body.bento .finjar-name,
+body.bento .ct-title {
+  letter-spacing: -0.055em;
+}
+
+body.bento .c-contact {
+  background: var(--paper-surface);
+  color: var(--paper-ink);
+  border-color: var(--paper-surface);
+  align-items: flex-start;
+}
+
+body.bento .c-contact:hover,
+body.bento .c-contact:focus-within {
+  background: var(--paper-surface);
+  color: var(--paper-ink);
+}
+
+body.bento .c-contact .ct-title {
+  flex: 1 1 100%;
+  font-size: clamp(1.9rem, 3vw, 2.65rem);
+  letter-spacing: -0.035em;
+}
+
+body.bento .c-contact .ct-right {
+  width: 100%;
+  justify-content: space-between;
+}
+
+body.bento .c-contact a.email,
+body.bento .c-contact .resume {
+  color: inherit;
+  border-color: currentColor;
+}
+
+body.bento .c-contact .resume:hover,
+body.bento .c-contact .resume:focus-visible {
+  background: var(--signal-orange);
+  color: var(--paper-ink);
+  border-color: var(--signal-orange);
+}
+
+/* Paper mode keeps the same composition and swaps the surrounding material. */
+body.bento[data-theme="paper"] {
+  --L-page: 0.93;
+  --C-page: 0.008;
+  --L-cell: 0.93;
+  --C-cell: 0.012;
+  --L-cell2: 0.93;
+  --C-cell2: 0.012;
+  --L-fg: 0.22;
+  --L-fg2: 0.4;
+  --L-fg3: 0.52;
+  --signal-orange: #e75c24;
+  --paper-surface: #fffaf0;
+  --paper-ink: #1b1510;
+  --fold-panel: rgba(248, 242, 232, 0.76);
+  --fold-panel-hover: rgba(255, 250, 241, 0.9);
+  --fold-hero: rgba(248, 242, 232, 0.34);
+  background: #e8e1d6;
+}
+
+body.bento[data-theme="paper"] .system-map-background.is-ready {
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 1024px) {
+  body.bento .board {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: minmax(170px, auto);
+    grid-template-areas:
+      "hero hero hero hero"
+      "feat feat finjar finjar"
+      "feat feat stat stat"
+      "char clock work work"
+      "cap cap contact contact";
+  }
+
+  body.bento .board {
+    padding-inline: 28px;
+  }
+}
+
+@media (max-width: 620px) {
+  body.bento .board {
+    display: grid;
+    padding: 0 14px 50px;
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(150px, auto);
+    grid-template-areas:
+      "hero"
+      "feat"
+      "finjar"
+      "char"
+      "clock"
+      "stat"
+      "work"
+      "cap"
+      "contact";
+  }
+
+  body.bento .cell {
+    border-right: 0;
+    padding: 22px 8px;
+  }
+
+  body.bento .c-hero {
+    min-height: 330px;
+  }
+
+  body.bento .hero-tag {
+    text-align: left;
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board,
+  .cell {
+    transition: none;
+  }
+
+  .fold-signal {
+    transition: none;
+  }
+
+  .system-map-background {
+    transition: none;
   }
 }

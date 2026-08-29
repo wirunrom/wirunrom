@@ -10,13 +10,14 @@ import {
   WorkCell,
 } from "@/components/bento/cells"
 import { ClockCell } from "@/components/bento/clock-cell"
-import { MascotLayer } from "@/components/bento/mascot-layer"
 import { ModalProvider } from "@/components/bento/modal-provider"
+import { SystemMapBackgroundCanvas } from "@/components/bento/system-map-background-canvas"
 
 export default function Page() {
   return (
     <ModalProvider>
       <div className="stage">
+        <SystemMapBackgroundCanvas />
         <BentoBoard>
           <HeroCell />
           <FeaturedCell />
@@ -29,7 +30,6 @@ export default function Page() {
           <ContactCell />
         </BentoBoard>
       </div>
-      <MascotLayer />
     </ModalProvider>
   )
 }

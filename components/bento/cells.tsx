@@ -1,11 +1,14 @@
 import { EDUCATION, EXPERIENCE, PROJECTS, STACK } from "@/lib/bento-content"
+import { FoldSignalCanvas } from "./fold-signal-canvas"
+import { HeroSignalCanvas } from "./hero-signal-canvas"
 import { ReadMoreButton } from "./read-more-button"
 import { ResumeLink } from "./resume-link"
 
 /* 01 · IDENTITY */
 export function HeroCell() {
   return (
-    <section className="cell c-hero">
+    <section className="cell c-hero" id="top">
+      <HeroSignalCanvas />
       <div className="row">
         <span className="label m3">(01) — Full-Stack Developer</span>
         <span className="status">
@@ -30,7 +33,8 @@ export function HeroCell() {
 /* 02 · FEATURED */
 export function FeaturedCell() {
   return (
-    <section className="cell c-feat">
+    <section className="cell c-feat signal-cell" id="work">
+      <FoldSignalCanvas kind="orders" />
       <div className="row">
         <span className="label ac">★ Featured · @ Infogrammer</span>
         <span className="label m3">Production</span>
@@ -61,7 +65,8 @@ export function FeaturedCell() {
 /* 02b · FINJAR — personal flagship (twin of Featured) */
 export function FinjarCell() {
   return (
-    <section className="cell c-finjar">
+    <section className="cell c-finjar signal-cell">
+      <FoldSignalCanvas kind="forecast" />
       <div className="row">
         <span className="label ac">★ Personal · Finjar</span>
         <span className="label m3">Solo build</span>
@@ -84,7 +89,8 @@ export function FinjarCell() {
 /* 05 · EXPERIENCE */
 export function ExperienceCell() {
   return (
-    <section className="cell c-stat">
+    <section className="cell c-stat signal-cell" id="experience">
+      <FoldSignalCanvas kind="experience" />
       <span className="label m3" style={{ marginBottom: 4 }}>
         (03) — Experience
       </span>
@@ -122,7 +128,8 @@ export function EducationCell() {
 /* 06 · WORK LIST */
 export function WorkCell() {
   return (
-    <section className="cell c-work">
+    <section className="cell c-work signal-cell">
+      <FoldSignalCanvas kind="projects" />
       <span className="label m3" style={{ marginBottom: 6 }}>
         Projects &amp; OSS
       </span>
@@ -156,7 +163,8 @@ export function WorkCell() {
 /* 07 · CAPABILITIES */
 export function CapabilitiesCell() {
   return (
-    <section className="cell c-cap">
+    <section className="cell c-cap signal-cell">
+      <FoldSignalCanvas kind="capabilities" />
       <span className="label m3" style={{ marginBottom: 6 }}>
         (04) — Stack
       </span>
@@ -175,7 +183,8 @@ export function CapabilitiesCell() {
 /* 08 · CONTACT */
 export function ContactCell() {
   return (
-    <section className="cell c-contact">
+    <section className="cell c-contact signal-cell" id="contact">
+      <FoldSignalCanvas kind="contact" />
       <h2 className="ct-title">
         Let&apos;s build
         <br />

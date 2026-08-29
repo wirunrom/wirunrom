@@ -1,5 +1,3 @@
-import { ThemeControls } from "./theme-controls"
-
 export function Topbar() {
   return (
     <header className="topbar">
@@ -10,7 +8,6 @@ export function Topbar() {
         <span className="brand nav-hide" style={{ marginRight: 6 }}>
           Bento
         </span>
-        <ThemeControls />
       </div>
     </header>
   )

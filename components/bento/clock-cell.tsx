@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react"
 
-import { ThemeControls } from "./theme-controls"
-
-/* 04 · CLOCK + display settings (theme controls live here — they're a utility,
-   not portfolio content, so they share this cell instead of taking their own). */
+/* 04 · Local clock. The portfolio intentionally ships with one fixed material
+   system, so display controls do not compete with the content. */
 export function ClockCell() {
   const [time, setTime] = useState("--:--:--")
 
@@ -28,12 +26,6 @@ export function ClockCell() {
         <span className="label m3">Local time</span>
         <div className="clock-time">{time}</div>
         <div className="clock-zone m3">Chiang Mai · TH · GMT+7</div>
-      </div>
-      <div className="clock-theme">
-        <span className="label m3">Theme</span>
-        <div className="set-controls">
-          <ThemeControls />
-        </div>
       </div>
     </section>
   )

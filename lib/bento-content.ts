@@ -36,7 +36,7 @@ export type Project = {
 }
 
 export const PROJECTS: Project[] = [
-  { name: "hqr-generate", meta: "RUST · OSS ↗", href: "https://github.com/wirunrom/hqr-generate" },
+  { name: "barqrcode", meta: "RUST · OSS ↗", href: "https://github.com/wirunrom/barqrcode" },
   { name: "Internal tools", meta: "@ INFOGRAMMER" },
 ]
 
