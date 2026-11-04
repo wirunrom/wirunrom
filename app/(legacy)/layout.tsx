@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Syne, JetBrains_Mono } from "next/font/google"
 
-import "./globals.css"
+import "../globals.css"
 import { cn } from "@/lib/utils"
 
 const syne = Syne({

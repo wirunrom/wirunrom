@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-04T18:15:45.092754+00:00",
+  "title": "Design System: WIRUNROM Signal File",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper"
+      },
+      "paper-2": {
+        "role": "neutral",
+        "displayName": "Secondary paper"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink"
+      },
+      "mute": {
+        "role": "neutral",
+        "displayName": "Muted ink"
+      },
+      "signal": {
+        "role": "primary",
+        "displayName": "Signal blue"
+      },
+      "on-signal": {
+        "role": "neutral",
+        "displayName": "On-signal"
+      },
+      "inverse-mute": {
+        "role": "neutral",
+        "displayName": "Inverse muted ink"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Fitted wordmark",
+        "purpose": "Runtime width fitting; no fixed size token."
+      },
+      "headline": {
+        "displayName": "Manifesto",
+        "purpose": "Fluid condensed Archivo statement."
+      }
+    },
+    "shadows": [
+      {
+        "name": "deck-ambient",
+        "value": "radial-gradient(closest-side, rgb(12 12 14 / .22), rgb(12 12 14 / 0)); filter: blur(8px)",
+        "purpose": "Ambient gradient below the 3D deck; not a box-shadow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "key-transform",
+        "value": ".14s cubic-bezier(.22,1,.36,1)",
+        "purpose": "Physical key state transition."
+      },
+      {
+        "name": "key-background",
+        "value": ".2s",
+        "purpose": "Key face background transition."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "small-max",
+        "value": "760px"
+      },
+      {
+        "name": "wide-gutter-min",
+        "value": "960px"
+      }
+    ],
+    "gameStage": {
+      "height": "clamp(220px, 38svh, 420px)",
+      "deckMaxWidth": "min(calc(100% - 24px), clamp(200px, 36svh, 400px))",
+      "pixelSizing": "Absolute canvas inside an independently sized stage; guarded ResizeObserver refreshes game dimensions.",
+      "clickerSizing": "Auto-height stage contains key and upgrade panel.",
+      "wordmark": "Preserved in normal flow; no overlap with game or shop."
+    },
+    "implementation": {
+      "framework": "Next.js App Router + React 19",
+      "styling": "Tailwind CSS 4 utilities; custom 3D/material state CSS",
+      "motion": "Installed gsap + @gsap/react + ScrollTrigger",
+      "page": "app/(arcade)/page.tsx",
+      "stylesheet": "app/(arcade)/arcade.css",
+      "legacy": "app/(legacy)/resume/page.tsx",
+      "staticHtml": false
+    },
+    "compactHud": {
+      "maxWidth": "760px",
+      "heroDiagnostics": "hidden",
+      "cursor": "fine pointer above 760px only",
+      "help": "short instruction + native expandable full help; 44px summary",
+      "readout": "hide idle prompts, retain live timers and results",
+      "matcha": "footer"
+    }
+  },
+  "components": [
+    {
+      "name": "Terminal submit",
+      "kind": "button",
+      "refersTo": "terminal-submit",
+      "description": "Extracted from the supplied arcade; no framework runtime required.",
+      "html": "<button class=\"ds-submit\">enter</button>",
+      "css": ".ds-submit{font-family:var(--mono, \"Geist Mono\", ui-monospace, Menlo, monospace);font-size:11px;letter-spacing:.02em;text-transform:lowercase;background:var(--ink,#0c0c0e);color:var(--paper,#e7e5de);border:0;padding:4px 10px;cursor:pointer}.ds-submit:focus-visible{outline:2px solid var(--signal,#2b55ff);outline-offset:2px}"
+    },
+    {
+      "name": "Answer field",
+      "kind": "input",
+      "refersTo": "terminal",
+      "description": "Terminal answer field; use the shared keyboard focus outline and 16px type on mobile.",
+      "html": "<input class=\"ds-answer\" aria-label=\"Answer\" placeholder=\"answer\" spellcheck=\"false\">",
+      "css": ".ds-answer{font-family:var(--mono, \"Geist Mono\", ui-monospace, Menlo, monospace);font-size:11px;letter-spacing:.02em;text-transform:lowercase;font-size:12px;background:none;border:0;color:var(--ink,#0c0c0e);outline:none;caret-color:var(--signal,#2b55ff)}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "label",
+      "description": "Extracted from the supplied arcade; no framework runtime required.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#console\">play</a><a href=\"#notes\">notes</a><a href=\"#end\">end</a></nav>",
+      "css": ".ds-nav{font-family:var(--mono, \"Geist Mono\", ui-monospace, Menlo, monospace);font-size:11px;letter-spacing:.02em;text-transform:lowercase;display:flex;gap:14px;background:var(--paper,#e7e5de);color:var(--ink,#0c0c0e)}.ds-nav a{color:inherit;text-decoration:none}.ds-nav a:hover{background:var(--ink,#0c0c0e);color:var(--paper,#e7e5de)}.ds-nav a:focus-visible{outline:2px solid var(--signal,#2b55ff);outline-offset:2px}"
+    },
+    {
+      "name": "Game key face",
+      "kind": "custom",
+      "refersTo": "key",
+      "description": "Face-only preview of the physical key; complete sides and game-state geometry remain in the source artifact.",
+      "html": "<button class=\"ds-key\">W</button>",
+      "css": ".ds-key{font-family:var(--display,\"Archivo\",\"Helvetica Neue\",Arial,sans-serif);font-weight:900;font-variation-settings:\"wdth\" 100,\"wght\" 900;font-size:58px;line-height:1;width:100px;height:100px;border-radius:6px;border:1.5px solid var(--ink,#0c0c0e);background:var(--paper,#e7e5de);color:var(--ink,#0c0c0e);cursor:pointer;transition:transform .14s cubic-bezier(.22,1,.36,1),background .2s}.ds-key:active{transform:translateZ(-16px)}.ds-key:focus-visible{outline:2px solid var(--signal,#2b55ff);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Signal File",
+    "overview": "The shipped arcade describes itself as a raw, dense signal file: warm paper, ink type, mono readouts, one electric accent, and a monumental name. The game deck gives this otherwise ruled editorial document a physical, playable center.\n\nVisual authority is the supplied `wirunrom-arcade.zip`. The shipped `/` is now a server-rendered Next.js/React page in `app/(arcade)/page.tsx`, with Tailwind 4 utilities in `components/arcade/sections.tsx` and state/material CSS in `app/(arcade)/arcade.css`. GSAP and ScrollTrigger are installed dependencies, scoped through `useGSAP`; there is no HTML rewrite or CDN script. The archived React portfolio at `/resume` retains its separate Editorial Fold / Paper + Signal system in `app/globals.css`; these tokens do not govern it.",
+    "keyCharacteristics": [
+      "Paper fields and ink rules.",
+      "Variable Archivo display against Geist Mono readouts.",
+      "Physical game keys, fitted wordmarks, and inverted regions."
+    ],
+    "rules": [
+      {
+        "name": "Signal",
+        "body": "Keep the supplied blue as the arcade's shared interaction accent; retain ink/paper inversions for selected cartridges and dark sections.",
+        "section": "colors"
+      },
+      {
+        "name": "Fitted Name",
+        "body": "Preserve the runtime measurement of the hero, negative duplicate, and footer names rather than substituting a fixed heading size.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "Do preserve the supplied arcade's design, copy, ten games, and easter eggs.",
+      "Do retain local fonts, touch controls, reduced-motion behavior, and visible keyboard focus.",
+      "Do keep the arcade and archived portfolio styles separate."
+    ],
+    "donts": [
+      "Don't import the archived React stylesheet into the arcade route group.",
+      "Don't replace the supplied design with new cards, palettes, or display fonts.",
+      "Don't propagate tiny key annotations as general UI patterns."
+    ]
+  }
+}

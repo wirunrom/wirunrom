@@ -34,3 +34,13 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local design reference supplied separately from the implementation
+/wirunrom-arcade.zip
+
+# Design workflow output: keep the shared design-system metadata only
+/.impeccable/*
+!/.impeccable/design.json
+
+# Local editor/agent preferences
+/.claude/*.local.*
