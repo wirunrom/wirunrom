@@ -3,32 +3,77 @@ import { QUICK_HELP } from "./content"
 import { createLifetime } from "./lifetime"
 import { arcadeStore } from "./storage"
 
+import type {
+  BoardOptions,
+  Brick,
+  ClickSave,
+  Direction,
+  FallingPiece,
+  Game,
+  HudUpdate,
+  Matrix,
+  Obstacle,
+  Piece,
+  Point,
+  Shape,
+  TetrisAction,
+  Upgrade,
+} from "./game-types"
+
+const DIRECTION_VECTORS: Record<Direction, Point> = {
+  l: [-1, 0],
+  r: [1, 0],
+  u: [0, -1],
+  d: [0, 1],
+}
+
 /**
  * Canvas and 3D-keypad driver. React owns the console shell; this instance owns
  * only the children of the ref-bound game surfaces, never page markup.
  * Every game state object is created per mount, with explicit resource teardown.
- * @param {HTMLElement} root
- * @param {number} gameIndex
- * @returns {() => void} Dispose the instance, including Strict Mode remounts.
  */
-export function mountGame(root, gameIndex) {
+export function mountGame(root: HTMLElement, gameIndex: number): () => void {
   const scope = createLifetime(window)
-  const listen = (target, type, callback, options) =>
-    scope.on(target, type, callback, options)
-  const addEventListener = (type, callback, options) =>
-    listen(window, type, callback, options)
+  const listen = <K extends keyof GlobalEventHandlersEventMap>(
+    target: EventTarget,
+    type: K,
+    callback: (event: GlobalEventHandlersEventMap[K]) => void,
+    options?: AddEventListenerOptions
+  ) =>
+    scope.on(
+      target,
+      type,
+      (event) => callback(event as GlobalEventHandlersEventMap[K]),
+      options
+    )
+  const addEventListener = <K extends keyof GlobalEventHandlersEventMap>(
+    type: K,
+    callback: (event: GlobalEventHandlersEventMap[K]) => void,
+    options?: AddEventListenerOptions
+  ) => listen(window, type, callback, options)
   const RM = matchMedia("(prefers-reduced-motion: reduce)").matches
-  const $ = (selector, parent = root) => parent.querySelector(selector)
-  const $$ = (selector, parent = root) => [...parent.querySelectorAll(selector)]
-  const seen = new WeakMap()
+  const $ = <T extends HTMLElement = HTMLElement>(
+    selector: string,
+    parent: ParentNode = root
+  ): T => {
+    const element = parent.querySelector<T>(selector)
+    if (!element) throw new Error(`Missing arcade element: ${selector}`)
+    return element
+  }
+  const $$ = <T extends HTMLElement = HTMLElement>(
+    selector: string,
+    parent: ParentNode = root
+  ): T[] => [...parent.querySelectorAll<T>(selector)]
+  const seen = new WeakMap<Element, boolean>()
   const io = new IntersectionObserver((entries) =>
     entries.forEach((entry) => seen.set(entry.target, entry.isIntersecting))
   )
-  const watch = (element) => {
+  const watch = <T extends Element>(element: T): T => {
     io.observe(element)
     return element
   }
-  const visible = (element) => !document.hidden && seen.get(element) !== false
+  const visible = (element: Element) =>
+    !document.hidden && seen.get(element) !== false
   const animations = gsap.context(() => {}, root)
   /* ── game console: ten cartridges share one stage ── */
   const deck = $("#deck"),
@@ -42,23 +87,25 @@ export function mountGame(root, gameIndex) {
     s: $("#gstat"),
     m: $("#gmsg"),
   }
-  const setReadout = (value) => {
+  const setReadout = (value: string) => {
     hud.c.textContent = value
     root.dataset.readoutIdle = String(
       !value || /to start|to launch/i.test(value)
     )
   }
-  const setHud = (o) => {
-    for (const k in o) {
-      if (k === "mc") hud.m.className = o.mc
-      else if (k === "c") setReadout(o[k])
-      else hud[k].textContent = o[k]
-      if (k === "h") $("#ghelp").textContent = o[k]
+  const setHud = (o: HudUpdate) => {
+    for (const k of Object.keys(o) as (keyof HudUpdate)[]) {
+      const value = o[k]
+      if (value === undefined) continue
+      if (k === "mc") hud.m.className = value
+      else if (k === "c") setReadout(value)
+      else hud[k].textContent = value
+      if (k === "h") $("#ghelp").textContent = value
     }
   }
   const store = arcadeStore
-  const timers = new Set()
-  const later = (fn, ms) => {
+  const timers = new Set<number>()
+  const later = (fn: () => void, ms: number) => {
     const id = scope.timeout(() => {
       timers.delete(id)
       fn()
@@ -71,25 +118,25 @@ export function mountGame(root, gameIndex) {
     timers.clear()
   }
   const now = () => performance.now()
-  const fmt = (n) => Math.floor(n).toLocaleString("en-US")
+  const fmt = (n: number) => Math.floor(n).toLocaleString("en-US")
   const TOUCH = matchMedia("(pointer: coarse)").matches
 
   /* 2.5D key boards */
-  let keys = [],
-    tiltBase = [46, -10]
-  function board(cols, rows, o = {}) {
+  let keys: HTMLButtonElement[] = []
+  let tiltBase: Point = [46, -10]
+  function board(cols: number, rows: number, o: BoardOptions = {}) {
     const depth = o.depth || 18,
       layers = o.layers || 6
     deck.innerHTML = ""
     keys = []
-    deck.style.setProperty("--cols", cols)
+    deck.style.setProperty("--cols", String(cols))
     deck.style.setProperty("--gap", o.gap || "10px")
     deck.style.width = o.width || "min(100%, 460px)"
     for (let i = 0; i < cols * rows; i++) {
       const k = document.createElement("button")
       k.className = "key"
       k.type = "button"
-      k.dataset.i = i
+      k.dataset.i = String(i)
       k.setAttribute("aria-label", `Game key ${i + 1}`)
       let s = ""
       for (let z = 0; z < layers; z++)
@@ -100,14 +147,14 @@ export function mountGame(root, gameIndex) {
       deck.appendChild(k)
       keys.push(k)
     }
-    tiltBase = (o.tilt || [46, -10]).slice()
+    tiltBase = o.tilt ? [...o.tilt] : [46, -10]
     if (innerWidth < 600) {
       tiltBase[0] -= 8
       tiltBase[1] *= 0.6
     }
     deck.style.transform = ""
   }
-  const label = (i, t = "", corner = "", sub = "") => {
+  const label = (i: number, t: string | number = "", corner = "", sub = "") => {
     const k = keys[i],
       b = $("b", k),
       L = String(t).length
@@ -115,18 +162,18 @@ export function mountGame(root, gameIndex) {
       "aria-label",
       [t, corner, sub].filter(Boolean).join(" ") || `Game key ${i + 1}`
     )
-    b.textContent = t
+    b.textContent = String(t)
     b.style.fontSize = (L <= 1 ? 58 : L === 2 ? 44 : L === 3 ? 32 : 25) + "cqw"
     $("i", k).textContent = corner
     $("u", k).textContent = sub
   }
-  const tap = (i) => {
+  const tap = (i: number) => {
     const k = keys[i]
     if (!k) return
     k.classList.add("down")
     scope.timeout(() => k.classList.remove("down"), 120)
   }
-  const flash = (i, c, ms) => {
+  const flash = (i: number, c: string, ms: number) => {
     if (!keys[i]) return
     keys[i].classList.add(c)
     later(() => keys[i] && keys[i].classList.remove(c), ms)
@@ -151,7 +198,7 @@ export function mountGame(root, gameIndex) {
   }
 
   /* the locked cartridge opens when you win anything */
-  function won(how) {
+  function won(how: string) {
     if (store.get("unlocked", false)) return
     store.set("unlocked", true)
     later(
@@ -166,10 +213,15 @@ export function mountGame(root, gameIndex) {
 
   /* 01 lights out */
   const LIGHTS = {
-    id: "lights",
+    best: 0,
+    on: [] as boolean[],
+    moves: 0,
+    done: false,
+    doneAt: 0,
+    id: "lights" as const,
     title: "lights out",
     hint: "each press flips a key and its neighbours. turn every light off",
-    mode: "deck",
+    mode: "deck" as const,
     enter() {
       board(5, 5, { width: "min(80%, 440px)", depth: 16 })
       this.best = store.get("lights", 0)
@@ -184,7 +236,7 @@ export function mountGame(root, gameIndex) {
       this.render()
       setHud({ m: "", mc: "mute" })
     },
-    flip(i) {
+    flip(i: number) {
       const x = i % 5,
         y = (i / 5) | 0
       ;[
@@ -207,7 +259,7 @@ export function mountGame(root, gameIndex) {
         s: `moves ${this.moves} · best ${this.best || "—"}`,
       })
     },
-    press(i) {
+    press(i: number) {
       tap(i)
       if (this.done) {
         if (now() - this.doneAt > 600) this.deal()
@@ -233,12 +285,16 @@ export function mountGame(root, gameIndex) {
 
   /* 02 2048 */
   const G2048 = {
-    id: "g2048",
+    best: 0,
+    g: [] as number[],
+    score: 0,
+    over: false,
+    id: "g2048" as const,
     title: "2048",
     hint: TOUCH
       ? "swipe on the board. merge equal numbers"
       : "arrows / wasd. merge equal numbers",
-    mode: "deck",
+    mode: "deck" as const,
     enter() {
       board(4, 4, { width: "min(76%, 380px)", depth: 18 })
       this.best = store.get("2048", 0)
@@ -260,7 +316,7 @@ export function mountGame(root, gameIndex) {
       this.g[i] = Math.random() < 0.9 ? 2 : 4
       return i
     },
-    render(pop = []) {
+    render(pop: number[] = []) {
       keys.forEach((k, i) => {
         const v = this.g[i]
         label(i, v || "")
@@ -274,7 +330,7 @@ export function mountGame(root, gameIndex) {
         s: `score ${this.score} · best ${this.best}`,
       })
     },
-    move(d) {
+    move(d: Direction) {
       if (this.over) return this.reset()
       let moved = false
       const merged = []
@@ -291,7 +347,7 @@ export function mountGame(root, gameIndex) {
                   : (3 - b) * 4 + a
           )
         const vals = l.map((i) => this.g[i]).filter(Boolean),
-          out = []
+          out: number[] = []
         for (let j = 0; j < vals.length; j++) {
           if (vals[j] === vals[j + 1]) {
             out.push(vals[j] * 2)
@@ -329,8 +385,8 @@ export function mountGame(root, gameIndex) {
       }
       return false
     },
-    keydown(e) {
-      const d = {
+    keydown(e: KeyboardEvent) {
+      const mapping: Partial<Record<string, Direction>> = {
         ArrowLeft: "l",
         KeyA: "l",
         ArrowRight: "r",
@@ -339,24 +395,33 @@ export function mountGame(root, gameIndex) {
         KeyW: "u",
         ArrowDown: "d",
         KeyS: "d",
-      }[e.code]
+      }
+      const d = mapping[e.code]
       if (!d) return false
       this.move(d)
       return true
     },
-    swipe(d) {
+    swipe(d: Direction) {
       this.move(d)
     },
   }
 
   /* 03 minesweeper */
   const MINES = {
-    id: "mines",
+    best: 0,
+    mine: [] as boolean[],
+    open: [] as boolean[],
+    flagd: [] as boolean[],
+    started: false,
+    over: false,
+    overAt: 0,
+    t0: 0,
+    id: "mines" as const,
     title: "minesweeper",
     hint: TOUCH
       ? "tap to open. long-press to flag. 10 mines"
       : "click to open. right-click to flag. 10 mines",
-    mode: "deck",
+    mode: "deck" as const,
     enter() {
       board(8, 8, {
         width: "min(84%, 500px)",
@@ -385,7 +450,7 @@ export function mountGame(root, gameIndex) {
         mc: "mute",
       })
     },
-    nb(i) {
+    nb(i: number) {
       const x = i % 8,
         y = (i / 8) | 0,
         r = []
@@ -398,7 +463,7 @@ export function mountGame(root, gameIndex) {
         }
       return r
     },
-    plant(safe) {
+    plant(safe: number) {
       const ban = new Set([safe, ...this.nb(safe)])
       let n = 0
       while (n < 10) {
@@ -409,10 +474,10 @@ export function mountGame(root, gameIndex) {
         }
       }
     },
-    reveal(i) {
+    reveal(i: number) {
       const st = [i]
       while (st.length) {
-        const j = st.pop()
+        const j = st.pop()!
         if (this.open[j] || this.flagd[j]) continue
         this.open[j] = true
         const c = this.nb(j).filter((n) => this.mine[n]).length
@@ -421,7 +486,7 @@ export function mountGame(root, gameIndex) {
         if (!c) this.nb(j).forEach((n) => !this.open[n] && st.push(n))
       }
     },
-    press(i) {
+    press(i: number) {
       if (this.over) {
         if (now() - this.overAt > 600) this.reset()
         return
@@ -453,7 +518,7 @@ export function mountGame(root, gameIndex) {
         won("minefield cleared")
       }
     },
-    flag(i) {
+    flag(i: number) {
       if (this.over || this.open[i]) return
       this.flagd[i] = !this.flagd[i]
       keys[i].classList.toggle("flag", this.flagd[i])
@@ -463,7 +528,7 @@ export function mountGame(root, gameIndex) {
         mc: "mute",
       })
     },
-    lose(i) {
+    lose(i: number) {
       this.over = true
       this.overAt = now()
       this.mine.forEach((m, j) => {
@@ -494,12 +559,18 @@ export function mountGame(root, gameIndex) {
     "KeyX",
     "KeyC",
   ]
-  const sub = (i) => (TOUCH ? "" : "qweasdzxc"[i])
+  const sub = (i: number) => (TOUCH ? "" : "qweasdzxc"[i])
   const WHACK = {
-    id: "whack",
+    best: 0,
+    on: false,
+    hot: new Map<number, boolean>(),
+    score: 0,
+    t0: 0,
+    endAt: 0,
+    id: "whack" as const,
     title: "whack-a-mole",
     hint: "hit the black keys, never the blue ones. 20 seconds",
-    mode: "deck",
+    mode: "deck" as const,
     enter() {
       board(3, 3, { width: "min(72%, 340px)", depth: 22 })
       keys.forEach((k, i) => label(i, "", "", sub(i)))
@@ -544,7 +615,7 @@ export function mountGame(root, gameIndex) {
       }
       later(() => this.spawn(), 620 - 300 * p)
     },
-    clr(i) {
+    clr(i: number) {
       keys[i].classList.remove("hot", "trap")
       label(i, "", "", sub(i))
     },
@@ -558,7 +629,7 @@ export function mountGame(root, gameIndex) {
     upd() {
       setHud({ s: `score ${this.score} · best ${this.best}` })
     },
-    press(i) {
+    press(i: number) {
       tap(i)
       if (!this.on) {
         if (now() - (this.endAt || 0) > 900) this.start()
@@ -600,7 +671,7 @@ export function mountGame(root, gameIndex) {
       })
       if (this.score >= 15) won("15 whacks")
     },
-    keydown(e) {
+    keydown(e: KeyboardEvent) {
       const i = WK.indexOf(e.code)
       if (i < 0) return false
       this.press(i)
@@ -612,10 +683,12 @@ export function mountGame(root, gameIndex) {
   }
 
   /* pixel games: one low-res 1-bit canvas, scaled up crisp */
-  const px = $("#px"),
-    pctx = px.getContext("2d")
+  const px = $<HTMLCanvasElement>("#px")
+  const context = px.getContext("2d")
+  if (!context) throw new Error("The arcade requires a 2D canvas context")
+  const pctx = context
   const P = { W: 0, H: 0, S: 4 }
-  let COL = {}
+  let COL = { paper: "", ink: "", sig: "", mute: "" }
   const readCols = () => {
     const cs = getComputedStyle(root)
     COL = {
@@ -625,6 +698,7 @@ export function mountGame(root, gameIndex) {
       mute: cs.getPropertyValue("--mute").trim(),
     }
   }
+  scope.on(window, "arcade-theme-change", () => readCols())
   function pxSize() {
     const r = deckStage.getBoundingClientRect()
     P.S = r.width < 600 ? 3 : 4
@@ -635,19 +709,19 @@ export function mountGame(root, gameIndex) {
     px.style.width = P.W * P.S + "px"
     px.style.height = P.H * P.S + "px"
   }
-  const R = (x, y, w, h, c) => {
+  const R = (x: number, y: number, w: number, h: number, c: string) => {
     pctx.fillStyle = c
     pctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h))
   }
   const clear = () => R(0, 0, P.W, P.H, COL.paper)
-  const pt = (e) => {
+  const pt = (e: PointerEvent): Point => {
     const r = px.getBoundingClientRect()
     return [
       ((e.clientX - r.left) / r.width) * P.W,
       ((e.clientY - r.top) / r.height) * P.H,
     ]
   }
-  const swipeDir = (a, b, min) => {
+  const swipeDir = (a: Point, b: Point, min: number): Direction | null => {
     const dx = b[0] - a[0],
       dy = b[1] - a[1]
     if (Math.max(Math.abs(dx), Math.abs(dy)) < min) return null
@@ -662,12 +736,24 @@ export function mountGame(root, gameIndex) {
 
   /* 05 breakout */
   const BRK = {
-    id: "breakout",
+    best: 0,
+    on: false,
+    level: 1,
+    score: 0,
+    lives: 3,
+    bricks: [] as Brick[],
+    pw: 0,
+    px: 0,
+    stuck: true,
+    b: { x: 0, y: 0, vx: 0, vy: 0 },
+    keyDir: 0,
+    armed: false,
+    id: "breakout" as const,
     title: "breakout",
     hint: TOUCH
       ? "drag to move. tap to launch"
       : "mouse or ← → to move. click or space to launch",
-    mode: "px",
+    mode: "px" as const,
     enter() {
       pxSize()
       this.best = store.get("brk", 0)
@@ -716,7 +802,7 @@ export function mountGame(root, gameIndex) {
         s: `score ${this.score} · best ${this.best}`,
       })
     },
-    update(dt) {
+    update(dt: number) {
       const py = P.H - 5
       if (this.keyDir) this.px += this.keyDir * 0.16 * dt
       this.px = Math.max(0, Math.min(P.W - this.pw, this.px))
@@ -820,10 +906,10 @@ export function mountGame(root, gameIndex) {
       R(this.px, P.H - 5, this.pw, 2, COL.ink)
       R(this.b.x, this.b.y, 2, 2, COL.ink)
     },
-    pmove(p) {
+    pmove(p: Point) {
       this.px = p[0] - this.pw / 2
     },
-    pdown(p) {
+    pdown(p: Point) {
       this.px = p[0] - this.pw / 2
       this.armed = true
     },
@@ -831,7 +917,7 @@ export function mountGame(root, gameIndex) {
       if (this.armed) this.launch()
       this.armed = false
     },
-    keydown(e) {
+    keydown(e: KeyboardEvent) {
       if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
         this.launch()
         return true
@@ -846,7 +932,7 @@ export function mountGame(root, gameIndex) {
       this.keyDir = d
       return true
     },
-    keyup(e) {
+    keyup(e: KeyboardEvent) {
       if (["ArrowLeft", "KeyA", "ArrowRight", "KeyD"].includes(e.code))
         this.keyDir = 0
     },
@@ -854,12 +940,25 @@ export function mountGame(root, gameIndex) {
 
   /* 06 runner */
   const RUN = {
-    id: "runner",
+    best: 0,
+    on: false,
+    gy: 0,
+    y: 0,
+    vy: 0,
+    obs: [] as Obstacle[],
+    dist: 0,
+    speed: 0,
+    next: 0,
+    live: false,
+    dead: false,
+    hold: false,
+    deadAt: 0,
+    id: "runner" as const,
     title: "runner",
     hint: TOUCH
       ? "tap to jump, hold for higher. duck under the blue ones"
       : "space / ↑ to jump, hold for higher. stay under the blue ones",
-    mode: "px",
+    mode: "px" as const,
     enter() {
       pxSize()
       this.best = store.get("run", 0)
@@ -896,7 +995,7 @@ export function mountGame(root, gameIndex) {
       if (this.y === 0) this.vy = 0.16
       this.hold = true
     },
-    update(dt) {
+    update(dt: number) {
       if (!this.live || this.dead) return
       this.dist += this.speed * dt
       this.speed = Math.min(0.2, 0.07 + this.dist / 40000)
@@ -969,14 +1068,14 @@ export function mountGame(root, gameIndex) {
         R(o.x, gy - o.y - o.h, o.w, o.h, o.y ? COL.sig : COL.ink)
       )
     },
-    keydown(e) {
+    keydown(e: KeyboardEvent) {
       if (["Space", "ArrowUp", "KeyW"].includes(e.code)) {
         if (!e.repeat) this.jump()
         return true
       }
       return false
     },
-    keyup(e) {
+    keyup(e: KeyboardEvent) {
       if (["Space", "ArrowUp", "KeyW"].includes(e.code)) this.hold = false
     },
     pdown() {
@@ -988,7 +1087,7 @@ export function mountGame(root, gameIndex) {
   }
 
   /* 07 mini tetris */
-  const SH = {
+  const SH: Record<Shape, Matrix> = {
     I: [[1, 1, 1, 1]],
     O: [
       [1, 1],
@@ -1015,14 +1114,30 @@ export function mountGame(root, gameIndex) {
       [1, 1, 1],
     ],
   }
-  const rot = (m) => m[0].map((_, i) => m.map((r) => r[i]).reverse())
+  const rot = (m: Matrix): Matrix =>
+    m[0].map((_, i) => m.map((r) => r[i]).reverse())
   const TET = {
-    id: "tetris",
+    best: 0,
+    on: false,
+    c: 0,
+    ox: 0,
+    oy: 0,
+    g: [] as Matrix,
+    lines: 0,
+    dead: false,
+    deadAt: 0,
+    bag: [] as Shape[],
+    nextP: { k: "I", m: [[1, 1, 1, 1]] } as Piece,
+    p: { k: "I", m: [[1, 1, 1, 1]], x: 0, y: 0 } as FallingPiece,
+    acc: 0,
+    live: false,
+    sw: null as Point | null,
+    id: "tetris" as const,
     title: "mini tetris",
     hint: TOUCH
       ? "tap left / right to move, middle to rotate, swipe down to drop"
       : "← → move · ↑ rotate · ↓ faster · space drops",
-    mode: "px",
+    mode: "px" as const,
     enter() {
       pxSize()
       this.best = store.get("tet", 0)
@@ -1051,19 +1166,19 @@ export function mountGame(root, gameIndex) {
         mc: "mute",
       })
     },
-    draw7() {
+    draw7(): Piece {
       if (!this.bag.length)
-        this.bag = Object.keys(SH).sort(() => Math.random() - 0.5)
-      const k = this.bag.pop()
+        this.bag = (Object.keys(SH) as Shape[]).sort(() => Math.random() - 0.5)
+      const k = this.bag.pop()!
       return { k, m: SH[k] }
     },
     spawn() {
-      this.p = { ...this.nextP, y: 0 }
+      this.p = { ...this.nextP, x: 0, y: 0 }
       this.p.x = Math.floor((10 - this.p.m[0].length) / 2)
       this.nextP = this.draw7()
       if (this.hit(this.p.m, this.p.x, this.p.y)) this.die()
     },
-    hit(m, x, y) {
+    hit(m: Matrix, x: number, y: number) {
       return m.some((r, j) =>
         r.some(
           (v, i) =>
@@ -1075,7 +1190,8 @@ export function mountGame(root, gameIndex) {
         )
       )
     },
-    tryMove(dx, dy, m = this.p.m) {
+    tryMove(dx: number, dy: number, m?: Matrix) {
+      m ??= this.p.m
       if (!this.hit(m, this.p.x + dx, this.p.y + dy)) {
         this.p.x += dx
         this.p.y += dy
@@ -1116,7 +1232,7 @@ export function mountGame(root, gameIndex) {
       })
       this.spawn()
     },
-    update(dt) {
+    update(dt: number) {
       if (!this.live || this.dead) return
       this.acc += dt
       const step = Math.max(90, 650 - this.lines * 30)
@@ -1134,7 +1250,7 @@ export function mountGame(root, gameIndex) {
         mc: "sig",
       })
     },
-    act(a) {
+    act(a: TetrisAction) {
       if (this.dead) {
         if (now() - this.deadAt > 500) this.reset()
         return
@@ -1156,8 +1272,8 @@ export function mountGame(root, gameIndex) {
         this.acc = 0
       }
     },
-    keydown(e) {
-      const a = {
+    keydown(e: KeyboardEvent) {
+      const mapping: Partial<Record<string, TetrisAction>> = {
         ArrowLeft: "l",
         KeyA: "l",
         ArrowRight: "r",
@@ -1167,15 +1283,16 @@ export function mountGame(root, gameIndex) {
         ArrowDown: "d",
         KeyS: "d",
         Space: "slam",
-      }[e.code]
+      }
+      const a = mapping[e.code]
       if (!a) return false
       this.act(a)
       return true
     },
-    pdown(p) {
+    pdown(p: Point) {
       this.sw = p
     },
-    pup(p) {
+    pup(p: Point) {
       if (!this.sw) return
       const d = swipeDir(this.sw, p, 8)
       this.sw = null
@@ -1240,12 +1357,28 @@ export function mountGame(root, gameIndex) {
 
   /* 08 snake */
   const SNAKE = {
-    id: "snake",
+    best: 0,
+    on: false,
+    cs: 3,
+    cols: 0,
+    rows: 0,
+    body: [] as Point[],
+    dir: [1, 0] as Point,
+    q: [] as Point[],
+    food: [0, 0] as Point,
+    grow: 0,
+    score: 0,
+    live: false,
+    dead: false,
+    deadAt: 0,
+    acc: 0,
+    sw: null as Point | null,
+    id: "snake" as const,
     title: "snake",
     hint: TOUCH
       ? "swipe to turn. eat, grow, don't bite yourself"
       : "arrows / wasd. eat, grow, don't bite yourself",
-    mode: "px",
+    mode: "px" as const,
     enter() {
       pxSize()
       this.best = store.get("snake", 0)
@@ -1298,7 +1431,7 @@ export function mountGame(root, gameIndex) {
       }
       return true
     },
-    update(dt) {
+    update(dt: number) {
       if (!this.live || this.dead) return
       this.acc += dt
       const st = Math.max(45, 95 - this.score * 1.5)
@@ -1308,9 +1441,9 @@ export function mountGame(root, gameIndex) {
       }
     },
     step() {
-      if (this.q.length) this.dir = this.q.shift()
+      if (this.q.length) this.dir = this.q.shift()!
       const h = this.body[0],
-        n = [
+        n: Point = [
           (h[0] + this.dir[0] + this.cols) % this.cols,
           (h[1] + this.dir[1] + this.rows) % this.rows,
         ]
@@ -1345,7 +1478,7 @@ export function mountGame(root, gameIndex) {
         mc: "sig",
       })
     },
-    turn(d) {
+    turn(d: Point) {
       const l = this.q.length ? this.q[this.q.length - 1] : this.dir
       if (
         (d[0] === -l[0] && d[1] === -l[1]) ||
@@ -1354,8 +1487,8 @@ export function mountGame(root, gameIndex) {
         return
       if (this.q.length < 3) this.q.push(d)
     },
-    keydown(e) {
-      const d = {
+    keydown(e: KeyboardEvent) {
+      const mapping: Partial<Record<string, Point>> = {
         ArrowUp: [0, -1],
         KeyW: [0, -1],
         ArrowDown: [0, 1],
@@ -1364,21 +1497,21 @@ export function mountGame(root, gameIndex) {
         KeyA: [-1, 0],
         ArrowRight: [1, 0],
         KeyD: [1, 0],
-      }[e.code]
+      }
+      const d = mapping[e.code]
       if (!d) return false
       if (this.start()) this.turn(d)
       return true
     },
-    pdown(p) {
+    pdown(p: Point) {
       this.sw = p
     },
-    pmove(p) {
+    pmove(p: Point) {
       if (!this.sw) return
       const d = swipeDir(this.sw, p, 5)
       if (!d) return
       this.sw = p
-      if (this.start())
-        this.turn({ l: [-1, 0], r: [1, 0], u: [0, -1], d: [0, 1] }[d])
+      if (this.start()) this.turn(DIRECTION_VECTORS[d])
     },
     pup() {
       if (this.sw && !this.live) this.start()
@@ -1401,7 +1534,7 @@ export function mountGame(root, gameIndex) {
   }
 
   /* 09 ship it — an idle clicker */
-  const UPG = [
+  const UPG: Upgrade[] = [
     { id: "duck", n: "rubber duck", d: "+1 per click", c: 15, click: 1 },
     { id: "intern", n: "intern", d: "+1 line / s", c: 50, ps: 1 },
     { id: "so", n: "stack overflow tab", d: "+6 lines / s", c: 400, ps: 6 },
@@ -1416,10 +1549,11 @@ export function mountGame(root, gameIndex) {
     { id: "farm", n: "server farm", d: "+900 lines / s", c: 150000, ps: 900 },
   ]
   const CLICK = {
-    id: "clicker",
+    s: { lines: 0, own: {}, total: 0, t: 0 } as ClickSave,
+    id: "clicker" as const,
     title: "ship it",
     hint: "tap the key to write code. buy things that write it for you",
-    mode: "deck",
+    mode: "deck" as const,
     enter() {
       board(1, 1, {
         width: "min(46vw, 210px)",
@@ -1428,7 +1562,12 @@ export function mountGame(root, gameIndex) {
         tilt: [40, -12],
       })
       label(0, "SHIP", "01", "ship")
-      this.s = store.get("clk", { lines: 0, own: {}, total: 0, t: Date.now() })
+      this.s = store.get<ClickSave>("clk", {
+        lines: 0,
+        own: {},
+        total: 0,
+        t: Date.now(),
+      })
       const gain =
         Math.min(
           8 * 3600,
@@ -1452,7 +1591,7 @@ export function mountGame(root, gameIndex) {
         UPG.reduce((a, u) => a + (u.click || 0) * (this.s.own[u.id] || 0), 0)
       )
     },
-    cost(u) {
+    cost(u: Upgrade) {
       return Math.ceil(u.c * Math.pow(1.15, this.s.own[u.id] || 0))
     },
     hud() {
@@ -1469,9 +1608,9 @@ export function mountGame(root, gameIndex) {
       this.refresh()
     },
     refresh() {
-      $$("button", side).forEach((b) => {
-        b.disabled =
-          this.s.lines < this.cost(UPG.find((x) => x.id === b.dataset.u))
+      $$<HTMLButtonElement>("button", side).forEach((b) => {
+        const upgrade = UPG.find((x) => x.id === b.dataset.u)
+        b.disabled = !upgrade || this.s.lines < this.cost(upgrade)
       })
     },
     press() {
@@ -1483,9 +1622,10 @@ export function mountGame(root, gameIndex) {
       this.hud()
       this.refresh()
     },
-    buy(id) {
-      const u = UPG.find((x) => x.id === id),
-        c = this.cost(u)
+    buy(id: string) {
+      const u = UPG.find((x) => x.id === id)
+      if (!u) return
+      const c = this.cost(u)
       if (this.s.lines < c) return
       this.s.lines -= c
       this.s.own[id] = (this.s.own[id] || 0) + 1
@@ -1510,7 +1650,7 @@ export function mountGame(root, gameIndex) {
       this.s.t = Date.now()
       store.set("clk", this.s)
     },
-    pop(t) {
+    pop(t: string) {
       const e = document.createElement("span")
       e.className = "floater m"
       e.textContent = t
@@ -1521,7 +1661,7 @@ export function mountGame(root, gameIndex) {
       deckStage.appendChild(e)
       scope.timeout(() => e.remove(), 800)
     },
-    keydown(e) {
+    keydown(e: KeyboardEvent) {
       if (e.code === "Enter" || e.code === "Space") {
         if (!e.repeat) this.press()
         return true
@@ -1533,18 +1673,22 @@ export function mountGame(root, gameIndex) {
     },
   }
   listen(side, "click", (e) => {
-    const b = e.target.closest("button[data-u]")
-    if (b && cur === CLICK) CLICK.buy(b.dataset.u)
+    const b = (
+      e.target instanceof Element ? e.target : null
+    )?.closest<HTMLButtonElement>("button[data-u]")
+    if (b && cur === CLICK) CLICK.buy(b.dataset.u!)
   })
 
   /* 10 ???? — three locks */
   const termlog = $("#termlog"),
-    termin = $("#termin")
+    termin = $<HTMLInputElement>("#termin")
   const CIPH = {
-    id: "ciph",
+    lv: 0,
+    wrong: 0,
+    id: "ciph" as const,
     title: "????",
     hint: "three locks. answers are lowercase",
-    mode: "term",
+    mode: "term" as const,
     L: [
       {
         q: "68 65 6c 6c 6f",
@@ -1571,7 +1715,7 @@ export function mountGame(root, gameIndex) {
       this.render()
       if (!TOUCH) scope.timeout(() => termin.focus({ preventScroll: true }), 60)
     },
-    render(msg) {
+    render(msg = "") {
       const L = this.L,
         lv = this.lv
       if (lv >= L.length) {
@@ -1594,7 +1738,7 @@ export function mountGame(root, gameIndex) {
         mc: msg === "open." ? "sig" : "mute",
       })
     },
-    submit(v) {
+    submit(v: string) {
       v = v.trim().toLowerCase()
       if (v === "reset") {
         this.lv = 0
@@ -1621,13 +1765,26 @@ export function mountGame(root, gameIndex) {
   })
 
   /* One randomly dealt game per page load; no game-selection controls. */
-  const GAMES = [LIGHTS, G2048, MINES, WHACK, BRK, RUN, TET, SNAKE, CLICK, CIPH]
-  let cur = null
-  function load(n) {
+  const GAMES: Game[] = [
+    LIGHTS,
+    G2048,
+    MINES,
+    WHACK,
+    BRK,
+    RUN,
+    TET,
+    SNAKE,
+    CLICK,
+    CIPH,
+  ]
+  let cur: Game | null = null
+  function load(n: number) {
     if (cur && cur.exit) cur.exit()
     clearTimers()
     if (cur && cur.mode === "px") cur.on = false
-    cur = GAMES[n]
+    const game = GAMES[n]
+    if (!game) throw new RangeError(`Unknown arcade game index: ${n}`)
+    cur = game
     cons.dataset.game = cur.id
     cons.dataset.mode = cur.mode
     $("#gquick").textContent = QUICK_HELP[cur.id][TOUCH ? 0 : 1]
@@ -1649,36 +1806,43 @@ export function mountGame(root, gameIndex) {
   let lp = 0,
     lpFired = false
   listen(deck, "click", (e) => {
-    const k = e.target.closest(".key")
+    const k = (
+      e.target instanceof Element ? e.target : null
+    )?.closest<HTMLButtonElement>(".key")
     if (!k || !cur || !cur.press) return
     if (lpFired) {
       lpFired = false
       return
     }
-    cur.press(+k.dataset.i)
+    cur.press(Number(k.dataset.i))
   })
   listen(deck, "contextmenu", (e) => {
-    const k = e.target.closest(".key")
+    const k = (
+      e.target instanceof Element ? e.target : null
+    )?.closest<HTMLButtonElement>(".key")
     if (k && cur && cur.flag) {
       e.preventDefault()
-      cur.flag(+k.dataset.i)
+      cur.flag(Number(k.dataset.i))
     }
   })
   listen(deck, "pointerdown", (e) => {
-    const k = e.target.closest(".key")
+    const k = (
+      e.target instanceof Element ? e.target : null
+    )?.closest<HTMLButtonElement>(".key")
     if (!k || !cur || !cur.flag || e.pointerType === "mouse") return
     lpFired = false
+    const flag = cur.flag.bind(cur)
     lp = scope.timeout(() => {
       lpFired = true
-      cur.flag(+k.dataset.i)
+      flag(Number(k.dataset.i))
       if (navigator.vibrate) navigator.vibrate(15)
     }, 420)
   })
-  ;["pointerup", "pointercancel", "pointerleave"].forEach((t) =>
+  ;(["pointerup", "pointercancel", "pointerleave"] as const).forEach((t) =>
     listen(deck, t, () => scope.cancelTimeout(lp))
   )
   // swipes on the board (2048)
-  let sw0 = null
+  let sw0: Point | null = null
   listen(deckStage, "pointerdown", (e) => {
     if (cur && cur.swipe) sw0 = [e.clientX, e.clientY]
   })
@@ -1700,11 +1864,19 @@ export function mountGame(root, gameIndex) {
   // keyboard
   addEventListener("keydown", (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || !cur) return
-    if (e.target.closest && e.target.closest("input, textarea, summary")) return
+    if (
+      (e.target instanceof Element ? e.target : null)?.closest &&
+      (e.target instanceof Element ? e.target : null)?.closest(
+        "input, textarea, summary"
+      )
+    )
+      return
     if (
       (e.code === "Space" || e.code === "Enter") &&
-      e.target.closest &&
-      e.target.closest(".key, .side button")
+      (e.target instanceof Element ? e.target : null)?.closest &&
+      (e.target instanceof Element ? e.target : null)?.closest(
+        ".key, .side button"
+      )
     )
       return
     if (!visible(deckStage)) return
@@ -1731,14 +1903,15 @@ export function mountGame(root, gameIndex) {
 
   // one loop drives the pixel games
   let lastT = 0
-  ;(function pxLoop(t) {
+  function pxLoop(t: number) {
     if (cur && cur.mode === "px" && cur.on && visible(deckStage)) {
       cur.update(Math.min(50, t - (lastT || t)))
       cur.draw()
     }
     lastT = t
     scope.frame(pxLoop)
-  })(0)
+  }
+  pxLoop(0)
 
   // pointer tilts the board
   const tilt = { x: 0, y: 0, tx: 0, ty: 0 }
@@ -1752,7 +1925,7 @@ export function mountGame(root, gameIndex) {
     tilt.tx = 0
     tilt.ty = 0
   })
-  ;(function deckTick() {
+  function deckTick() {
     if (visible(deckStage) && cur && cur.mode === "deck") {
       const k = RM ? 1 : 0.08
       tilt.x += (tilt.tx - tilt.x) * k
@@ -1764,7 +1937,8 @@ export function mountGame(root, gameIndex) {
         deck.style.transform = `rotateX(${tiltBase[0] - tilt.y * 6}deg) rotateZ(${tiltBase[1] + tilt.x * 5}deg) rotateY(${tilt.x * 3}deg)`
     }
     scope.frame(deckTick)
-  })()
+  }
+  deckTick()
 
   /* easter egg: konami flips the file negative (physical keys, any layout) */
   const KON = [
@@ -1779,7 +1953,7 @@ export function mountGame(root, gameIndex) {
     "KeyB",
     "KeyA",
   ]
-  const KSYM = {
+  const KSYM: Record<string, string> = {
     ArrowUp: "↑",
     ArrowDown: "↓",
     ArrowLeft: "←",
@@ -1817,7 +1991,7 @@ export function mountGame(root, gameIndex) {
 
   return () => {
     if (cur?.exit) cur.exit()
-    if (cur) cur.on = false
+    if (cur?.mode === "px") cur.on = false
     scope.dispose()
     io.disconnect()
     stageResize.disconnect()
