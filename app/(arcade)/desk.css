@@ -289,6 +289,7 @@ html.arcade-light-shifting .reference-desk .mouse .slice { transition: none; }
 .reference-desk .notegrp:focus-visible .note { outline: 2px solid var(--signal); outline-offset: 4px; }
 
 @media (max-width: 820px) {
+  .reference-desk .crumb { display: none; }
   .reference-desk .detail .foot button, .reference-desk .detail .foot a { min-height: 44px; padding-block: 7px; }
   .reference-desk .detail .project-links svg { width: 15px; height: 15px; }
 }
