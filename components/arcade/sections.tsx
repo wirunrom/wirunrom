@@ -1,5 +1,11 @@
 import { Fragment } from "react"
-import { BOOT_MESSAGES, NAME, STATEMENT, TICKERS } from "@/lib/arcade/content"
+import {
+  BOOT_MESSAGES,
+  DESK_BRIDGE,
+  NAME,
+  STATEMENT,
+  TICKERS,
+} from "@/lib/arcade/content"
 import { LocalClock, MatchaLevel } from "./live-readouts"
 
 export function LoadingSignal() {
@@ -189,7 +195,7 @@ export function Manifesto() {
   return (
     <section
       id="notes"
-      className="manifesto gap-3 px-gutter grid grid-cols-1 py-[10vh] min-[761px]:grid-cols-12 min-[761px]:pt-[18vh] min-[761px]:pb-[16vh]"
+      className="manifesto gap-3 px-gutter pb-4 min-[761px]:pb-6 grid grid-cols-1 pt-[10vh] min-[761px]:grid-cols-12 min-[761px]:pt-[18vh]"
       aria-label="Statement"
     >
       <div className="gap-1 grid content-start text-[11px] min-[761px]:col-span-3">
@@ -217,6 +223,20 @@ export function Manifesto() {
           </Fragment>
         ))}
       </p>
+      <a
+        href="#building"
+        data-scroll
+        className="desk-bridge mt-6 text-mute hover:text-ink min-[761px]:mt-8 block w-fit text-[11px] min-[761px]:col-span-9 min-[761px]:col-start-4"
+      >
+        <span>{DESK_BRIDGE}</span>
+        <span
+          aria-hidden="true"
+          className="mt-3 h-10 w-3 text-signal relative block"
+        >
+          <span className="desk-link-line left-1.5 top-0 h-9 absolute w-px bg-current" />
+          <span className="desk-link-arrow bottom-1 absolute left-[3px] size-[7px] rotate-45 border-r border-b border-current" />
+        </span>
+      </a>
     </section>
   )
 }

@@ -116,7 +116,7 @@ At 760px and below, the bar and footer become two columns, hero details simplify
 
 ## Elevation & Depth
 
-Most content is flat, separated by ink rules. The deck alone uses preserved 3D geometry: perspective (1400px), an initial rotation (52 degrees on X and -8 degrees on Z), layered ink sides, raised key faces, and state-dependent Z translation. Its ambient shadow is a blurred radial gradient, not an offset box shadow. Fine grain overlays the page at opacity (.05).
+Most content is flat, separated by ink rules. The game deck uses preserved 3D geometry: perspective (1400px), an initial rotation (52 degrees on X and -8 degrees on Z), layered ink sides, raised key faces, and state-dependent Z translation. Its ambient shadow is a blurred radial gradient, not an offset box shadow. Fine grain overlays the page at opacity (.05).
 
 Key transitions use transform (.14s, `cubic-bezier(.22,1,.36,1)`) and background (.2s). The React motion boundary respects `prefers-reduced-motion`; `useGSAP` reverts timelines and ScrollTriggers on unmount. The game instance separately disposes its frames, timers, listeners, observers and GSAP context. Page animations use the installed GSAP package.
 
@@ -165,3 +165,44 @@ Ruled overflow-clipped text strips alternate display type and mono readouts, inc
 - **Don't** propagate tiny key annotations as general body or form text.
 
 The supplied 9px key annotations and decorative metadata remain artifact-specific. Form fields retain the shared keyboard focus outline; the standalone prototype’s missing focus affordance is not carried forward as a design rule.
+
+## Project desk — supplied ZIP direction
+
+Source: wirunrom-desk.zip. Native React CSS-3D primitives reproduce its 1200×700
+plane, raised laptop/phone/monitor, cylindrical lamp/mug, books, two project folders, a keyboard/mouse and a contact sticky note. No iframe or standalone HTML. Camera transform order, home viewpoints,
+fit and right-panel/mobile-bottom-sheet offsets follow the supplied reference.
+Current project copy and sample flags stay authoritative; screen UIs are
+schematic. Selection flies the camera and dims other objects; Escape/back closes,
+arrow keys or panel controls browse works. A text index remains keyboard usable.
+
+The lamp toggles light/dark arcade tokens and persists wr.light. First
+visit defaults to Light. Dark paper #0f0f11, secondary #19191c, ink #e7e5de,
+muted #8f8c84 and signal #4d6fff; screens glow, lamp glow disappears. Existing
+local fonts remain. Canvas games reread theme colors on arcade-theme-change.
+Reduced motion removes camera travel and CSS transitions. Styles are scoped
+in desk.css; no legacy stylesheet imports or whole-document injected markup.
+
+Detail panels currently show project information only, without screenshots.
+Camera travel and pointer tilt use separate GSAP targets. Tilt is suspended
+during camera flights and over controls; repeated selection/close requests
+do not restart travel. Scene centering occurs only on initial entry, keeping
+rapid previous/next navigation and exit stable.
+
+The desk appears once on viewport entry via a separate preserve-3d wrapper
+(800ms Z lift with a separate 650ms flat paper veil). Camera transforms and pointer tilt
+remain independent. Keyboard focus completes reveal; reduced motion skips it.
+Idle lamp-tip text is omitted.
+
+Entrance rendering: keep opacity at 1 throughout the 3D tree. A separate flat
+paper veil fades away while a preserve-3d wrapper rises 40px in desk space.
+Opacity on a preserve-3d ancestor forces flattening and creates a depth pop
+at completion. Pointer tilt waits for entrance; fit is measured only on resize.
+
+The statement-to-desk handoff uses a short mono link aligned to the statement
+column: “some of those things live on this desk.” A blue arrow grows into a
+vertical guide on scroll. Reduced statement bottom spacing and removed desk
+top margins keep the handoff compact. The original statement typography stays.
+
+- Device screens use the revised `wirunrom-desk-fix-mock.zip` mockups: Finjar web/mobile balance, transactions and forecast; POS Heart sale toolbar, bill, categories and products. Native decorative JSX renders sample data at 2× inside clipped glass, using existing local fonts and light/dark tokens. Desk camera, dossier and lamp behavior remain independent.
+
+- Lamp lighting applies to the whole arcade palette, including body, header, statement and footer. Default is Light unless a saved choice exists. GSAP interpolates root colors and lamp power for 1100ms off / 1350ms on; desk light contracts/fades as screens gain glow. Never fade the preserve-3d scene itself. Reduced motion changes immediately.

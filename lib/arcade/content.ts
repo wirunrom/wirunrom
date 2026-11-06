@@ -59,3 +59,5 @@ export const QUICK_HELP = {
   clicker: ["tap to ship code", "click to ship code"],
   ciph: ["decode the message", "decode the message"],
 } as const
+
+export const DESK_BRIDGE = "some of those things live on this desk."

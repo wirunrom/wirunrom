@@ -1,4 +1,5 @@
 @import "tailwindcss" source(none);
+@import "./desk.css";
 @source "./";
 @source "../../components/arcade";
 @source "../../lib/arcade";
@@ -22,6 +23,8 @@
   --mute: #6d6a63;
   --line: #0c0c0e;
   --signal: #2b55ff;
+  --lamp-power: 1;
+  --shade: rgb(12 12 14 / .16);
   --gut: max(16px, env(safe-area-inset-left, 0px));
   --gutr: max(16px, env(safe-area-inset-right, 0px));
   color-scheme: light;

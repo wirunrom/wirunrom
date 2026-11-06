@@ -1,5 +1,6 @@
 import { ArcadeShell } from "@/components/arcade/arcade-shell"
 import { GameConsole } from "@/components/arcade/game-console"
+import { ProjectNotes } from "@/components/arcade/project-notes"
 import {
   Footer,
   HeroDetails,
@@ -28,6 +29,7 @@ export default function Page() {
         </section>
         <Ticker kind="stack" />
         <Manifesto />
+        <ProjectNotes />
         <Ticker kind="process" />
         <Ticker kind="notes" />
       </main>

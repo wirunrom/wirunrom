@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "generate:project-codes": "node scripts/generate-project-codes.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -15,6 +16,7 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@tabler/icons-react": "^3.44.0",
+    "barqrcode": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gsap": "^3.15.1",

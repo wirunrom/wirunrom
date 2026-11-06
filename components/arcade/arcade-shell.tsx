@@ -255,6 +255,26 @@ export function ArcadeShell({ children }: { children: React.ReactNode }) {
               },
             }
           )
+          const bridgeMotion = gsap.timeline({
+            scrollTrigger: {
+              trigger: ".desk-bridge",
+              start: "top 90%",
+              end: "top 55%",
+              scrub: true,
+            },
+          })
+          bridgeMotion.fromTo(
+            ".desk-link-line",
+            { scaleY: 0.25, transformOrigin: "top" },
+            { scaleY: 1, ease: "none" },
+            0
+          )
+          bridgeMotion.fromTo(
+            ".desk-link-arrow",
+            { y: -27 },
+            { y: 0, ease: "none" },
+            0
+          )
           gsap.to(wordmark, {
             yPercent: -18,
             ease: "none",

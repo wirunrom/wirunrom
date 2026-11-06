@@ -95,6 +95,13 @@
       "help": "short instruction + native expandable full help; 44px summary",
       "readout": "hide idle prompts, retain live timers and results",
       "matcha": "footer"
+    },
+    "projectFiles": {
+      "source": "wirunrom-desk.zip",
+      "material": "1200x700 CSS-3D desk: laptop + phone, enlarged monitor, two project folders, keyboard/mouse, lamp and contact sticky note.",
+      "interaction": "Four active works plus contact note; two-row external links/navigation footer; desktop inline panel, compact portrait bottom sheet and landscape side panel; camera retargets during resize.",
+      "theme": "Lamp interpolates root colors and lamp power; persisted wr.light with Light default; game canvas palette event; legacy isolated.",
+      "entrance": "800ms Z lift in a preserve-3d wrapper; separate flat paper veil fades out in 650ms. Never animate opacity on the 3D ancestry. Tilt waits until entrance completes; fit cached on resize."
     }
   },
   "components": [
