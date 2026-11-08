@@ -284,3 +284,17 @@ see those vars and `font-family` silently falls back to serif (Times).
   outside the pane footprint. Cast textures are cropped to the actual desk
   (1200×700 at 0.5 scale = 600×350), without a large clip-path-backed margin.
   Games defer palette reads while offscreen and refresh on reentry.
+
+## Desk mobile performance (iOS pinch-zoom crash, Android lag)
+
+- iOS WebKit re-rasterizes every preserve-3d layer at the pinch-zoom scale and the
+  WebContent process runs out of memory. So `.scene` uses `touch-action: pan-x pan-y`
+  and cancels `gesturestart`/`gesturechange`. If the page is already zoomed
+  (`visualViewport.scale > 1.02`, `data-native-zoomed`), `.world` is `display:none`
+  with a "pinch out" hint. Do not reintroduce pinch-zoom on the desk.
+- Touch / ≤820px (`compactRendering`): the lamp switches the theme instantly. Never
+  tween root tokens per frame there; that restyles every 3D layer.
+- Only the active theme's `.lit`/`.desk-cast` pseudo-element and screen raster are
+  displayed. Both exist only while `html.arcade-light-shifting` (desktop cross-fade).
+- During camera flights `.world` gets `will-change: transform` so layers are not
+  re-rasterized each frame; it is removed when the flight ends so text re-sharpens.

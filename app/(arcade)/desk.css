@@ -5,7 +5,7 @@
 .reference-desk .lightbtn i { width: 7px; height: 7px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 25%, transparent); }
 html.arcade-dark .reference-desk .lightbtn i { background: transparent; box-shadow: inset 0 0 0 1.5px var(--mute); }
 
-.reference-desk .scene { position: relative; height: clamp(440px, 78vh, 860px); perspective: 1800px; perspective-origin: 50% 30%; overflow: hidden; touch-action: manipulation; }
+.reference-desk .scene { position: relative; height: clamp(440px, 78vh, 860px); perspective: 1800px; perspective-origin: 50% 30%; overflow: hidden; touch-action: pan-x pan-y; /* no pinch / double-tap zoom on the 3D desk: iOS re-rasterizes every 3D layer at the zoom scale and runs out of memory */ }
 .reference-desk .world { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
 .reference-desk .world { z-index: 1; }
 /* Window lighting from wirunrom-desk-light-shadow.zip: static soft PNG panes,
@@ -350,3 +350,15 @@ html.arcade-light-shifting .reference-desk .mouse .slice { transition: none; }
 .reference-desk .scene[data-native-zoomed="true"] .screen-dark { opacity: 0; }
 html.arcade-dark .reference-desk .scene[data-native-zoomed="true"] .screen-light { opacity: 0; }
 html.arcade-dark .reference-desk .scene[data-native-zoomed="true"] .screen-dark { opacity: 1; }
+
+/* ── mobile performance ──────────────────────────────────────────────── */
+/* Only the active theme's light / shadow / screen texture is rasterized; both exist only while the lamp cross-fades (desktop). */
+html:not(.arcade-dark):not(.arcade-light-shifting) .reference-desk :is(.lit, .desk-cast)::after,
+html.arcade-dark:not(.arcade-light-shifting) .reference-desk :is(.lit, .desk-cast)::before { display: none; }
+html:not(.arcade-dark):not(.arcade-light-shifting) .reference-desk .screen-dark,
+html.arcade-dark:not(.arcade-light-shifting) .reference-desk .screen-light { display: none; }
+/* During a camera flight keep layers at their current raster scale instead of re-rasterizing every frame. */
+.reference-desk .scene[data-camera-moving="true"] .world { will-change: transform; }
+/* Page pinch-zoomed elsewhere and scrolled onto the desk: unmount the 3D layers entirely (frees GPU memory) until zoom returns to 1. */
+.reference-desk .scene[data-native-zoomed="true"] .world { display: none; }
+.reference-desk .scene[data-native-zoomed="true"]::after { content: "zoomed in — pinch out to see the desk"; position: absolute; inset: 0; display: grid; place-items: center; font: 11px var(--mono, monospace); color: var(--mute); text-transform: lowercase; }

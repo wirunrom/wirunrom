@@ -232,7 +232,6 @@ export function ProjectDesk({
   const current = useRef<number | null>(null)
   const travelling = useRef(false)
   const compactRendering = useRef(false)
-  const lastCameraPaint = useRef(0)
   const tilt = useRef({ rx: 0, rz: 0 })
   const fit = useRef(1)
   const entrance = useRef<gsap.core.Timeline | null>(null)
@@ -281,16 +280,8 @@ export function ProjectDesk({
       oy: innerWidth > 820 ? -(host.current?.clientHeight ?? 0) * 0.08 : 0,
     }
   }
-  function apply(force = false) {
+  function apply() {
     if (!host.current || !world.current) return
-    const now = gsap.ticker.time * 1000
-    if (
-      !force &&
-      compactRendering.current &&
-      now - lastCameraPaint.current < 1000 / 30
-    )
-      return
-    lastCameraPaint.current = now
     const c = cam.current
     world.current.style.transform = `translate(${c.ox}px,${c.oy}px) scale(${fit.current * c.k}) rotateX(${c.rx + tilt.current.rx}deg) rotateZ(${c.rz + tilt.current.rz}deg) translate3d(${-c.cx}px,${-c.cy}px,${-c.cz}px)`
   }
@@ -338,7 +329,7 @@ export function ProjectDesk({
         onComplete: () => {
           travelling.current = false
           if (host.current) host.current.dataset.cameraMoving = "false"
-          apply(true)
+          apply()
         },
       })
     )()
@@ -433,7 +424,11 @@ export function ProjectDesk({
       LIGHTING_TOKENS.map((key) => [key, after.getPropertyValue(key)])
     )
     const refresh = () => window.dispatchEvent(new Event("arcade-theme-change"))
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // Touch / small screens: switch instantly. Tweening root tokens restyles and repaints every 3D layer per frame.
+    if (
+      compactRendering.current ||
+      matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       root.classList.remove("arcade-light-shifting")
       refresh()
       return
@@ -481,11 +476,16 @@ export function ProjectDesk({
     const syncZoom = () => {
       if (host.current)
         host.current.dataset.nativeZoomed = String(
-          (viewport?.scale ?? 1) > 1.05
+          (viewport?.scale ?? 1) > 1.02
         )
     }
     syncZoom()
     viewport?.addEventListener("resize", syncZoom, { passive: true })
+    // iOS WebKit (Safari and Chrome) also needs its non-standard gesture events cancelled to stop a pinch that starts on the desk.
+    const scene = host.current
+    const blockGesture = (event: Event) => event.preventDefault()
+    for (const type of ["gesturestart", "gesturechange"])
+      scene?.addEventListener(type, blockGesture, { passive: false })
     const on = arcadeStore.get("light", true)
     lightOn.current = on
     document.documentElement.classList.toggle("arcade-dark", !on)
@@ -515,7 +515,7 @@ export function ProjectDesk({
         retargetFlight(target)
       } else {
         Object.assign(cam.current, target)
-        apply(true)
+        apply()
       }
       if (changedLayout && current.current !== null) {
         layoutRestore?.kill()
@@ -534,6 +534,8 @@ export function ProjectDesk({
       observer.disconnect()
       quality.removeEventListener("change", syncQuality)
       viewport?.removeEventListener("resize", syncZoom)
+      for (const type of ["gesturestart", "gesturechange"])
+        scene?.removeEventListener(type, blockGesture)
       layoutRestore?.kill()
       gsap.killTweensOf(camera)
       gsap.killTweensOf(pointerTilt)
