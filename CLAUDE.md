@@ -228,3 +228,5 @@ see those vars and `font-family` silently falls back to serif (Times).
 - `DESK_NOTE` now serves as the “say hello” contact note, linking to existing
   GitHub, mail and LinkedIn destinations from the archived contact section.
   Contact icons share the footer link system; mailto uses the default context.
+
+- Portrait mobile dossiers are viewport-fixed drawers outside the perspective/overflow scene. Preserve page-gutter side insets and a safe bottom inset. Keep content and expanded scene alive through the downward exit; the camera returns immediately alongside the sheet, compensating for the upcoming idle fit before the scene height collapses. Reopening cancels the pending close; reduced motion closes immediately.

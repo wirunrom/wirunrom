@@ -216,6 +216,8 @@ export function ProjectDesk({
     opener = useRef<HTMLElement | null>(null)
   const [selected, setSelected] = useState<number | null>(null),
     [light, setLight] = useState(true)
+  const [closing, setClosing] = useState(false)
+  const closeDelay = useRef<gsap.core.Tween | null>(null)
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">(
     "idle"
   )
@@ -274,9 +276,9 @@ export function ProjectDesk({
       cz: 40,
       rx: innerWidth < 600 ? 50 : 56,
       rz: innerWidth < 600 ? -16 : -30,
-      k: innerWidth < 600 ? 1.32 : 1,
+      k: innerWidth < 600 ? 1.32 : 0.88,
       ox: 0,
-      oy: 0,
+      oy: innerWidth > 820 ? -(host.current?.clientHeight ?? 0) * 0.08 : 0,
     }
   }
   function apply() {
@@ -334,6 +336,9 @@ export function ProjectDesk({
   }
   function open(index: number, button?: HTMLElement) {
     entrance.current?.progress(1)
+    closeDelay.current?.kill()
+    closeDelay.current = null
+    setClosing(false)
     if (current.current === index) return
     setCopyStatus("idle")
     const entering = current.current === null
@@ -375,11 +380,33 @@ export function ProjectDesk({
     }
   }
   function close() {
-    if (current.current === null) return
-    current.current = null
-    setSelected(null)
-    fly(home())
-    opener.current?.focus({ preventScroll: true })
+    if (current.current === null || closeDelay.current) return
+    const finish = () => {
+      closeDelay.current = null
+      current.current = null
+      setSelected(null)
+      setClosing(false)
+      opener.current?.focus({ preventScroll: true })
+    }
+    if (
+      innerWidth <= 820 &&
+      innerHeight >= innerWidth &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setClosing(true)
+      const idleHeight = Math.min(500, Math.max(340, innerHeight * 0.52))
+      const idleFit = Math.min(
+        (host.current?.clientWidth ?? 0) / 1560,
+        idleHeight / 1080
+      )
+      const target = home()
+      target.k *= idleFit / fit.current
+      fly(target)
+      closeDelay.current = gsap.delayedCall(0.65, finish)
+    } else {
+      finish()
+      fly(home())
+    }
   }
   function toggle() {
     const next = !lightOn.current
@@ -473,6 +500,7 @@ export function ProjectDesk({
       gsap.killTweensOf(camera)
       gsap.killTweensOf(pointerTilt)
       lighting.current?.kill()
+      closeDelay.current?.kill()
       for (const key of LIGHTING_TOKENS)
         document.documentElement.style.removeProperty(key)
       document.documentElement.classList.remove(
@@ -532,6 +560,8 @@ export function ProjectDesk({
   return (
     <section
       className="reference-desk"
+      data-focused={selected !== null}
+      data-closing={closing}
       aria-label="Project desk"
       onKeyDown={(e) => {
         e.stopPropagation()
@@ -546,7 +576,7 @@ export function ProjectDesk({
       <div
         ref={host}
         onFocusCapture={() => entrance.current?.progress(1)}
-        className={`scene ${work ? "focused" : ""}`}
+        className={`scene ${work ? "focused" : ""} ${closing ? "closing" : ""}`}
         onClick={(e) => {
           if (!(e.target as Element).closest(".it,.lamp,.detail,.crumb"))
             close()
@@ -623,7 +653,7 @@ export function ProjectDesk({
               <div
                 className="mat flat"
                 style={{ transform: "translateZ(.5px)" }}
-              />
+              ></div>
               <div
                 className="lamp"
                 role="button"
@@ -891,133 +921,133 @@ export function ProjectDesk({
             </div>
           </div>
         </div>
-        <aside
-          className={isNote ? "detail detail-contact" : "detail"}
-          aria-label="Project details"
-          aria-hidden={!work}
-          inert={!work}
-        >
-          <div className="top">
-            <span>
-              {isNote
-                ? "note"
-                : `${selected === null ? "" : String(selected + 1).padStart(2, "0")} / ${projects.length}`}
-            </span>
-            <span>{isNote ? "sticky note" : work?.platform || "sample"}</span>
-          </div>
-          <div ref={detailBody} className="body">
-            <span className="status">
-              {work?.status ||
-                (work?.placeholder ? "sample file" : "work in progress")}
-            </span>
-            <h2>{work?.title}</h2>
-            <p>{work?.summary}</p>
-            {isNote ? (
-              <>
-                <dl className="contact-info">
-                  <dt>name</dt>
-                  <dd>{DESK_CONTACT.name}</dd>
-                  <dt>role</dt>
-                  <dd>{DESK_CONTACT.role}</dd>
-                  <dt>based</dt>
-                  <dd>
-                    {DESK_CONTACT.location} · {DESK_CONTACT.timezone}
-                  </dd>
-                  <dt className="contact-email-label">email</dt>
-                  <dd className="contact-email">
-                    <span className="select-text">{DESK_CONTACT.email}</span>
-                    <button
-                      type="button"
-                      onClick={copyEmail}
-                      className="copy-email"
-                      aria-label="Copy email address"
-                    >
-                      <IconCopy size={14} stroke={1.5} aria-hidden="true" />
-                      <span>{copyStatus === "copied" ? "copied" : "copy"}</span>
-                    </button>
-                  </dd>
-                </dl>
-                <span
-                  role="status"
-                  className={
-                    copyStatus === "error" ? "text-mute text-[10px]" : "sr-only"
-                  }
-                >
-                  {copyStatus === "copied"
-                    ? "email copied"
-                    : copyStatus === "error"
-                      ? "couldn’t copy. select the email above to copy it."
-                      : ""}
-                </span>
-                <p>{DESK_CONTACT.invitation}</p>
-              </>
-            ) : (
-              <dl>
-                <dt>platform</dt>
-                <dd>{work?.platform || "to be decided"}</dd>
-                <dt>type</dt>
+      </div>
+      <aside
+        className={isNote ? "detail detail-contact" : "detail"}
+        aria-label="Project details"
+        aria-hidden={!work}
+        inert={!work}
+      >
+        <div className="top">
+          <span>
+            {isNote
+              ? "note"
+              : `${selected === null ? "" : String(selected + 1).padStart(2, "0")} / ${projects.length}`}
+          </span>
+          <span>{isNote ? "sticky note" : work?.platform || "sample"}</span>
+        </div>
+        <div ref={detailBody} className="body">
+          <span className="status">
+            {work?.status ||
+              (work?.placeholder ? "sample file" : "work in progress")}
+          </span>
+          <h2>{work?.title}</h2>
+          <p>{work?.summary}</p>
+          {isNote ? (
+            <>
+              <dl className="contact-info">
+                <dt>name</dt>
+                <dd>{DESK_CONTACT.name}</dd>
+                <dt>role</dt>
+                <dd>{DESK_CONTACT.role}</dd>
+                <dt>based</dt>
                 <dd>
-                  {work?.category ||
-                    (work?.placeholder ? "sample project" : "personal project")}
+                  {DESK_CONTACT.location} · {DESK_CONTACT.timezone}
                 </dd>
-                <dt>stack</dt>
-                <dd className="min-w-0 break-words">
-                  {work?.stack?.join(" · ") || "to be decided"}
+                <dt className="contact-email-label">email</dt>
+                <dd className="contact-email">
+                  <span className="select-text">{DESK_CONTACT.email}</span>
+                  <button
+                    type="button"
+                    onClick={copyEmail}
+                    className="copy-email"
+                    aria-label="Copy email address"
+                  >
+                    <IconCopy size={14} stroke={1.5} aria-hidden="true" />
+                    <span>{copyStatus === "copied" ? "copied" : "copy"}</span>
+                  </button>
                 </dd>
               </dl>
-            )}
-            {work?.notes?.length ? (
-              <ul>
-                {work.notes.map((note) => (
-                  <li key={note}>{note}</li>
-                ))}
-              </ul>
-            ) : null}
-            {work?.hint ? (
-              <small className="text-mute leading-relaxed block text-[10px]">
-                {work.hint}
-              </small>
-            ) : null}
-          </div>
-          <div className="foot">
-            {work?.links?.length ? (
-              <nav
-                className="project-links"
-                aria-label={isNote ? "Contact links" : "Project links"}
+              <span
+                role="status"
+                className={
+                  copyStatus === "error" ? "text-mute text-[10px]" : "sr-only"
+                }
               >
-                {work.links.map((link) => {
-                  const Icon = LINK_ICONS[link.kind]
-                  return (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      aria-label={`${work.title}: ${link.label}`}
-                      title={link.label}
-                      download={link.download}
-                      target={
-                        link.kind === "mail" || link.download
-                          ? undefined
-                          : "_blank"
-                      }
-                      rel="noopener noreferrer"
-                    >
-                      <Icon size={17} stroke={1.6} aria-hidden="true" />
-                      <span>{link.label}</span>
-                    </a>
-                  )
-                })}
-              </nav>
-            ) : null}
-            <nav className="project-navigation" aria-label="Project navigation">
-              <button onClick={() => step(-1)}>← prev</button>
-              <button onClick={() => step(1)}>next →</button>
-              <button ref={closeButton} onClick={close}>
-                close ×
-              </button>
+                {copyStatus === "copied"
+                  ? "email copied"
+                  : copyStatus === "error"
+                    ? "couldn’t copy. select the email above to copy it."
+                    : ""}
+              </span>
+              <p>{DESK_CONTACT.invitation}</p>
+            </>
+          ) : (
+            <dl>
+              <dt>platform</dt>
+              <dd>{work?.platform || "to be decided"}</dd>
+              <dt>type</dt>
+              <dd>
+                {work?.category ||
+                  (work?.placeholder ? "sample project" : "personal project")}
+              </dd>
+              <dt>stack</dt>
+              <dd className="min-w-0 break-words">
+                {work?.stack?.join(" · ") || "to be decided"}
+              </dd>
+            </dl>
+          )}
+          {work?.notes?.length ? (
+            <ul>
+              {work.notes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : null}
+          {work?.hint ? (
+            <small className="text-mute leading-relaxed block text-[10px]">
+              {work.hint}
+            </small>
+          ) : null}
+        </div>
+        <div className="foot">
+          {work?.links?.length ? (
+            <nav
+              className="project-links"
+              aria-label={isNote ? "Contact links" : "Project links"}
+            >
+              {work.links.map((link) => {
+                const Icon = LINK_ICONS[link.kind]
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    aria-label={`${work.title}: ${link.label}`}
+                    title={link.label}
+                    download={link.download}
+                    target={
+                      link.kind === "mail" || link.download
+                        ? undefined
+                        : "_blank"
+                    }
+                    rel="noopener noreferrer"
+                  >
+                    <Icon size={17} stroke={1.6} aria-hidden="true" />
+                    <span>{link.label}</span>
+                  </a>
+                )
+              })}
             </nav>
-          </div>
-        </aside>
-      </div>
+          ) : null}
+          <nav className="project-navigation" aria-label="Project navigation">
+            <button onClick={() => step(-1)}>← prev</button>
+            <button onClick={() => step(1)}>next →</button>
+            <button ref={closeButton} onClick={close}>
+              close ×
+            </button>
+          </nav>
+        </div>
+      </aside>
       <div
         className="list sr-only focus-within:not-sr-only"
         aria-label="Project shortcuts"
