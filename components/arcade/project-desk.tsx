@@ -1,5 +1,6 @@
 "use client"
 import Image from "next/image"
+import { DeskLightSurface, useDeskLighting } from "./desk-lighting"
 import {
   IconBrandGithub,
   IconBrandNpm,
@@ -97,6 +98,7 @@ function Box({
         style={{ transform: `translateZ(${h}px)`, borderRadius: r }}
       >
         {children}
+        <DeskLightSurface x={x} y={y} z={z + h} />
       </div>
       <div
         className="f-fr"
@@ -214,6 +216,7 @@ export function ProjectDesk({
     detailBody = useRef<HTMLDivElement>(null),
     closeButton = useRef<HTMLButtonElement>(null),
     opener = useRef<HTMLElement | null>(null)
+  const lightClock = useDeskLighting(host)
   const [selected, setSelected] = useState<number | null>(null),
     [light, setLight] = useState(true)
   const [closing, setClosing] = useState(false)
@@ -629,6 +632,9 @@ export function ProjectDesk({
             zIndex: 6,
           }}
         />
+        <div className="timechip m mute" aria-hidden="true">
+          {lightClock}
+        </div>
         {work && (
           <div className="crumb m">
             <span>desk / {work.title}</span>
@@ -653,7 +659,10 @@ export function ProjectDesk({
               <div
                 className="mat flat"
                 style={{ transform: "translateZ(.5px)" }}
-              ></div>
+              >
+                <DeskLightSurface x={180} y={222} z={0.5} />
+              </div>
+              <div className="desk-cast" aria-hidden="true" />
               <div
                 className="lamp"
                 role="button"
@@ -769,13 +778,13 @@ export function ProjectDesk({
                             </span>
                             <IconArrowNarrowRight size={18} stroke={1.5} />
                             <span>
-                              <IconChefHat size={15} stroke={1.5} />
-                              <small>kitchen</small>
+                              <IconDeviceDesktop size={15} stroke={1.5} />
+                              <small>POS</small>
                             </span>
                             <IconArrowNarrowRight size={18} stroke={1.5} />
                             <span>
-                              <IconDeviceDesktop size={15} stroke={1.5} />
-                              <small>POS</small>
+                              <IconChefHat size={15} stroke={1.5} />
+                              <small>kitchen</small>
                             </span>
                           </div>
                         </>
@@ -801,11 +810,6 @@ export function ProjectDesk({
                   `folder${p.id === "barqrcode" ? " barcode-file" : ""}`
                 )
               )}
-              <div
-                className="shadow"
-                aria-hidden="true"
-                style={{ left: 700, top: 574, width: 346, height: 116 }}
-              />
               <Box x={692} y={566} w={340} d={112} h={12} r={8}>
                 <div
                   className="kb kb2"
@@ -826,17 +830,6 @@ export function ProjectDesk({
                   ))}
                 </div>
               </Box>
-              <div
-                className="shadow"
-                aria-hidden="true"
-                style={{
-                  left: 1068,
-                  top: 592,
-                  width: 52,
-                  height: 76,
-                  borderRadius: 24,
-                }}
-              />
               <div
                 className="mouse"
                 aria-hidden="true"
@@ -914,6 +907,7 @@ export function ProjectDesk({
                       {line}
                     </span>
                   ))}
+                  <DeskLightSurface x={1060} y={440} z={1} />
                 </div>,
                 "notegrp"
               )}
@@ -991,9 +985,17 @@ export function ProjectDesk({
                 {work?.category ||
                   (work?.placeholder ? "sample project" : "personal project")}
               </dd>
-              <dt>stack</dt>
-              <dd className="min-w-0 break-words">
-                {work?.stack?.join(" · ") || "to be decided"}
+              <dt className="sr-only">Technology stack</dt>
+              <dd className="min-w-0 col-span-2 break-words">
+                {work?.stack?.length ? (
+                  <ul className="stack-tags" aria-label="Technology stack">
+                    {work.stack.map((technology) => (
+                      <li key={technology}>{technology}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  "to be decided"
+                )}
               </dd>
             </dl>
           )}

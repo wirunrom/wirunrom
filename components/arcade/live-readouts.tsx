@@ -5,12 +5,12 @@ import { useEffect, useRef, useState } from "react"
 export function LocalClock() {
   const ref = useRef<HTMLSpanElement>(null)
   useEffect(() => {
-    const formatter = new Intl.DateTimeFormat("en-GB", {
+    const formatter = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Bangkok",
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-      hour12: false,
+      hour12: true,
     })
     const update = () => {
       if (ref.current)
@@ -20,7 +20,7 @@ export function LocalClock() {
     const timer = window.setInterval(update, 1000)
     return () => window.clearInterval(timer)
   }, [])
-  return <span ref={ref}>gmt+7 00:00:00</span>
+  return <span ref={ref}>gmt+7 12:00:00 AM</span>
 }
 
 export function MatchaLevel() {

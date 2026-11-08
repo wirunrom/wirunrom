@@ -2,6 +2,57 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import { chooseGame, GAME_IDS } from "../lib/arcade/storage.ts"
 import { createLifetime } from "../lib/arcade/lifetime.ts"
+import { previewHour, twelveHourLabel } from "../lib/arcade/time.ts"
+import { castPolygons, convexHull } from "../lib/arcade/desk-shadows.ts"
+
+test("cast silhouettes retain footprints and cap long low-angle shadows", () => {
+  assert.deepEqual(
+    convexHull([
+      [0, 0],
+      [10, 0],
+      [10, 10],
+      [0, 10],
+      [5, 5],
+      [0, 0],
+    ]),
+    [
+      [0, 0],
+      [10, 0],
+      [10, 10],
+      [0, 10],
+    ]
+  )
+  const normal = castPolygons(0, 1)
+  assert.deepEqual(castPolygons(0, 10), normal)
+  const base = normal[4]
+  assert.equal(Math.min(...base.map((point) => point[1])), 88)
+  assert.equal(Math.max(...base.map((point) => point[1])), 168)
+  const left = castPolygons(-1, 0)[0]
+  const right = castPolygons(1, 0)[0]
+  assert.equal(Math.min(...left.map((point) => point[0])), 44)
+  assert.equal(Math.max(...right.map((point) => point[0])), 148)
+})
+
+test("12-hour previews distinguish noon, midnight and fractional hours", () => {
+  for (const [query, expected] of [
+    ["hour=12am", 0],
+    ["hour=0am", 0],
+    ["hour=12pm", 12],
+    ["hour=0pm", 12],
+    ["hour=8.5pm", 20.5],
+    ["hour=8&period=PM", 20],
+    ["hour=8", 8],
+    ["hour=13pm", null],
+    ["hour=23.9", null],
+    ["hour=8&period=invalid", null],
+    ["hour=NaN", null],
+    ["", null],
+  ])
+    assert.equal(previewHour(new URLSearchParams(query)), expected, query)
+  assert.equal(twelveHourLabel(0), "12:00 AM")
+  assert.equal(twelveHourLabel(12), "12:00 PM")
+  assert.equal(twelveHourLabel(23.5), "11:30 PM")
+})
 
 test("random deals exclude the previous game and the locked cipher", () => {
   for (const previous of [null, ...GAME_IDS]) {

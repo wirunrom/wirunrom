@@ -230,3 +230,38 @@ see those vars and `font-family` silently falls back to serif (Times).
   Contact icons share the footer link system; mailto uses the default context.
 
 - Portrait mobile dossiers are viewport-fixed drawers outside the perspective/overflow scene. Preserve page-gutter side insets and a safe bottom inset. Keep content and expanded scene alive through the downward exit; the camera returns immediately alongside the sheet, compensating for the upcoming idle fit before the scene height collapses. Reopening cancels the pending close; reduced motion closes immediately.
+
+- Window lighting follows `wirunrom-desk-light-shadow.zip` through
+  `components/arcade/desk-lighting.tsx`: one soft 3×2 pane PNG per theme, generated
+  with canvas shadowBlur at half resolution once per minute. Upward Box tops,
+  mat and note receive the same desk-space image with a height offset; upright
+  screen panels retain their own screen glow. No CSS blur on floor/cast shadows.
+  `useDeskLighting` scopes variables to the scene, cleans its interval/listener,
+  uses Chiang Mai time (or `?hour=11.9pm` / `?hour=11.9&period=pm` for comparison), and crossfades cached
+  day/moon pane images using the same `--lamp-power` as the palette and cast shadows. Apply the initial pane position without transition and omit the image on surfaces outside its footprint (including front-row folders).
+  The small time label follows the supplied reference; cast shadows use the silhouette renderer below.
+  Room sky/shafts are intentionally omitted so the scene blends into the page. Preserve the existing
+  default Light preference, continuous root palette tween and mobile dossier.
+
+- Arcade clocks display 12-hour time with AM/PM. Lighting previews accept 0–12
+  with an am/pm suffix or `period=am|pm` (bare values default to AM);
+  `lib/arcade/time.ts` owns noon/midnight conversion. Project stacks render
+  full-width outlined technology tags with a screen-reader-only label.
+
+- `wirunrom-desk-lightonlaptop.zip` adds window-light occlusion: laptop lid,
+  monitor/neck and phone planes in `OCCLUDERS` cut soft projected silhouettes
+  out of the cached PNG. Ray altitude varies 16–74°, shadow length is capped
+  at 2.4 units per unit height, and azimuth swings ±72°. Raised lit surfaces
+  shift by this same ray. Keep occluder coordinates aligned with desk geometry.
+
+- Cast shadows follow `wirunrom-desk-shadow-obj.zip`. `lib/arcade/desk-shadows.ts`
+  projects typed box/cylinder/plane casters along the window ray, caps shadow
+  length at one unit per unit height and takes each convex hull. One combined
+  path prevents overlap seams. Both theme textures are rasterized at half size
+  once per minute and crossfade with `--lamp-power` on the flat `.desk-cast`
+  layer, clipped to 1200×700. Old ellipse shadows and their DOM are removed.
+  Keep CASTERS synchronized with desk geometry, including the three rotated books.
+
+- Window pane crossfades use flat pseudo-elements on `.lit`; `--surface-lit`
+  gates both images outside their footprint. Never swap the image at theme-toggle
+  start or add a competing CSS color transition to the per-frame lamp value.
