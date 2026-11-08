@@ -1,6 +1,7 @@
 "use client"
 import Image from "next/image"
 import { DeskLightSurface, useDeskLighting } from "./desk-lighting"
+import { useDeskPinch } from "./use-desk-pinch"
 import { DeskScreen } from "./desk-screen"
 import {
   IconBrandGithub,
@@ -233,9 +234,12 @@ export function ProjectDesk({
   const travelling = useRef(false)
   const compactRendering = useRef(false)
   const tilt = useRef({ rx: 0, rz: 0 })
+  const lightVeil = useRef<HTMLDivElement>(null)
+  // Touch: pinch zooms the camera inside the scene instead of the page (see use-desk-pinch.ts).
+  const pinch = useDeskPinch(host)
   const fit = useRef(1)
   const entrance = useRef<gsap.core.Timeline | null>(null)
-  const lighting = useRef<gsap.core.Tween | null>(null)
+  const lighting = useRef<gsap.core.Animation | null>(null)
   const lightOn = useRef(true)
   const panelWasOpen = useRef(false)
   const { contextSafe } = useGSAP(
@@ -283,7 +287,8 @@ export function ProjectDesk({
   function apply() {
     if (!host.current || !world.current) return
     const c = cam.current
-    world.current.style.transform = `translate(${c.ox}px,${c.oy}px) scale(${fit.current * c.k}) rotateX(${c.rx + tilt.current.rx}deg) rotateZ(${c.rz + tilt.current.rz}deg) translate3d(${-c.cx}px,${-c.cy}px,${-c.cz}px)`
+    const v = pinch.view.current
+    world.current.style.transform = `translate(${c.ox + v.x}px,${c.oy + v.y}px) scale(${fit.current * c.k * v.z}) rotateX(${c.rx + tilt.current.rx}deg) rotateZ(${c.rz + tilt.current.rz}deg) translate3d(${-c.cx}px,${-c.cy}px,${-c.cz}px)`
   }
   function destination(index: number): Camera {
     const r = host.current!.getBoundingClientRect()
@@ -313,6 +318,7 @@ export function ProjectDesk({
     }
   }
   function fly(to: Camera) {
+    pinch.reset()
     travelling.current = true
     if (host.current) host.current.dataset.cameraMoving = "true"
     gsap.killTweensOf(tilt.current)
@@ -415,6 +421,30 @@ export function ProjectDesk({
     arcadeStore.set("light", next)
     const root = document.documentElement
     lighting.current?.kill()
+    // Touch / small screens: the theme swap restyles and re-rasterizes every 3D layer in one heavy frame.
+    // Hide that frame behind a flat veil (opacity only = compositor work), swap underneath, then reveal.
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
+    const veil = lightVeil.current
+    if (compactRendering.current && !reduced && veil) {
+      const swap = () => {
+        root.classList.toggle("arcade-dark", !next)
+        root.classList.remove("arcade-light-shifting")
+        for (const key of LIGHTING_TOKENS) root.style.removeProperty(key)
+        window.dispatchEvent(new Event("arcade-theme-change"))
+      }
+      veil.style.background = getComputedStyle(root).getPropertyValue("--paper")
+      lighting.current = gsap
+        .timeline({ onInterrupt: swap })
+        .to(veil, { opacity: 1, duration: 0.14, ease: "power1.out" })
+        .add(swap)
+        // give the browser two frames to finish the heavy restyle while covered
+        .add(() => {
+          veil.style.background =
+            getComputedStyle(root).getPropertyValue("--paper")
+        }, "+=0.08")
+        .to(veil, { opacity: 0, duration: 0.3, ease: "power1.inOut" })
+      return
+    }
     const before = getComputedStyle(root)
     const from = LIGHTING_TOKENS.map((key) => before.getPropertyValue(key))
     root.classList.toggle("arcade-dark", !next)
@@ -461,6 +491,15 @@ export function ProjectDesk({
     })
   }
   const retargetFlight = useEffectEvent((target: Camera) => fly(target))
+  const applyCamera = useEffectEvent(() => apply())
+  const connectPinch = useEffectEvent(() =>
+    pinch.connect(
+      apply,
+      () =>
+        travelling.current ||
+        (entrance.current !== null && entrance.current.progress() < 1)
+    )
+  )
   useEffect(() => {
     const quality = matchMedia("(any-pointer: coarse), (max-width: 820px)")
     const syncQuality = () => {
@@ -472,6 +511,7 @@ export function ProjectDesk({
     }
     syncQuality()
     quality.addEventListener("change", syncQuality)
+    connectPinch()
     const viewport = window.visualViewport
     const syncZoom = () => {
       if (host.current)
@@ -515,7 +555,7 @@ export function ProjectDesk({
         retargetFlight(target)
       } else {
         Object.assign(cam.current, target)
-        apply()
+        applyCamera()
       }
       if (changedLayout && current.current !== null) {
         layoutRestore?.kill()
@@ -669,6 +709,18 @@ export function ProjectDesk({
             zIndex: 6,
           }}
         />
+        {pinch.zoomed && (
+          <button
+            type="button"
+            className="zoom-reset m"
+            onClick={(e) => {
+              e.stopPropagation()
+              pinch.reset()
+            }}
+          >
+            reset zoom
+          </button>
+        )}
         <div className="timechip m mute" aria-hidden="true">
           {lightClock}
         </div>
@@ -678,6 +730,7 @@ export function ProjectDesk({
             <button onClick={close}>← back to desk</button>
           </div>
         )}
+        <div ref={lightVeil} className="light-veil" aria-hidden="true" />
         <div ref={world} className="world">
           <div
             ref={reveal}

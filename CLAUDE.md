@@ -287,13 +287,22 @@ see those vars and `font-family` silently falls back to serif (Times).
 
 ## Desk mobile performance (iOS pinch-zoom crash, Android lag)
 
+- Touch only (`any-pointer: coarse`): `components/arcade/use-desk-pinch.ts` turns a
+  two-finger pinch on the desk into a camera zoom (1–3×) inside the scene, with
+  one-finger pan while zoomed (`data-user-zoom` → `touch-action: none`) and a
+  "reset zoom" button. The view `{z,x,y}` is separate from `cam` and is composed
+  in `apply()`; `fly()` resets it, so selecting a work always lands correctly.
+  A gesture that moved swallows the following click. Shadows/light stay on.
+  Desktop has no pinch handling. The desk wires `apply`/blocked checks through
+  `pinch.connect()` inside a `useEffectEvent` (React Compiler immutability rules).
 - iOS WebKit re-rasterizes every preserve-3d layer at the pinch-zoom scale and the
   WebContent process runs out of memory. So `.scene` uses `touch-action: pan-x pan-y`
   and cancels `gesturestart`/`gesturechange`. If the page is already zoomed
   (`visualViewport.scale > 1.02`, `data-native-zoomed`), `.world` is `display:none`
   with a "pinch out" hint. Do not reintroduce pinch-zoom on the desk.
-- Touch / ≤820px (`compactRendering`): the lamp switches the theme instantly. Never
-  tween root tokens per frame there; that restyles every 3D layer.
+- Touch / ≤820px (`compactRendering`): never tween root tokens per frame (it restyles
+  every 3D layer). The lamp fades `.light-veil` (opacity only, outside the 3D tree) in,
+  swaps the theme underneath during that heavy frame, then fades it out.
 - Only the active theme's `.lit`/`.desk-cast` pseudo-element and screen raster are
   displayed. Both exist only while `html.arcade-light-shifting` (desktop cross-fade).
 - During camera flights `.world` gets `will-change: transform` so layers are not
