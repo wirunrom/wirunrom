@@ -109,8 +109,16 @@ export function useDeskLighting(host: RefObject<HTMLDivElement | null>) {
       return `url(${canvas.toDataURL("image/png")})`
     }
     let placed = false
+    let inView = false
+    let lastMinute = -1
     function update() {
-      if (!scene) return
+      if (
+        !scene ||
+        document.hidden ||
+        !inView ||
+        (window.visualViewport?.scale ?? 1) > 1.05
+      )
+        return
       const parts = new Intl.DateTimeFormat("en-GB", {
         timeZone: "Asia/Bangkok",
         hour: "2-digit",
@@ -122,6 +130,18 @@ export function useDeskLighting(host: RefObject<HTMLDivElement | null>) {
       const hour =
         previewHour(new URLSearchParams(location.search)) ??
         hours + minutes / 60
+      const minute = Math.floor(hour * 60)
+      if (placed && minute === lastMinute) return
+      lastMinute = minute
+      // Read dimensions together, before applying the new textures/positions.
+      const surfaces = Array.from(
+        scene.querySelectorAll<HTMLElement>("[data-light-origin]"),
+        (layer) => ({
+          layer,
+          width: layer.parentElement?.clientWidth ?? 0,
+          height: layer.parentElement?.clientHeight ?? 0,
+        })
+      )
       const day = hour >= 6 && hour < 18
       const progress = ((((hour - 6) % 12) + 12) % 12) / 12
       const azimuth = -1 + 2 * progress
@@ -154,9 +174,8 @@ export function useDeskLighting(host: RefObject<HTMLDivElement | null>) {
         "--window-moon",
         paint("rgba(170,195,255,.36)", azimuth, elevation, wx, wy, lx, ly)
       )
-      scene
-        .querySelectorAll<HTMLElement>("[data-light-origin]")
-        .forEach((layer) => {
+      surfaces.forEach(
+        ({ layer, width: surfaceWidth, height: surfaceHeight }) => {
           // React mounts before this effect: don't animate from the CSS default
           // (0,0), which briefly washes light across unrelated objects.
           if (!placed) layer.style.transition = "none"
@@ -170,20 +189,30 @@ export function useDeskLighting(host: RefObject<HTMLDivElement | null>) {
           // Don't submit a light texture for surfaces entirely outside its
           // footprint. In particular, front-row folders never catch this pane.
           const intersects =
-            left < layer.clientWidth &&
-            top < layer.clientHeight &&
+            left < surfaceWidth &&
+            top < surfaceHeight &&
             left + width > 0 &&
             top + height > 0
           layer.style.setProperty("--surface-lit", intersects ? "1" : "0")
-        })
+          layer.hidden = !intersects
+        }
+      )
       placed = true
       setClock(`${day ? "sun" : "moon"} · ${twelveHourLabel(hour)} chiang mai`)
     }
-    update()
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting
+        if (inView) update()
+      },
+      { rootMargin: "200px" }
+    )
+    observer.observe(scene)
     const timer = window.setInterval(update, 60_000)
     document.addEventListener("visibilitychange", update)
     return () => {
       clearInterval(timer)
+      observer.disconnect()
       document.removeEventListener("visibilitychange", update)
       for (const key of [
         "--cast-sun",

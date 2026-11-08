@@ -110,8 +110,8 @@ export function drawCastShadows(
 ): string {
   const scale = 0.5,
     offset = 5000
-  canvas.width = 1600 * scale
-  canvas.height = 1100 * scale
+  canvas.width = 1200 * scale
+  canvas.height = 700 * scale
   const context = canvas.getContext("2d")
   if (!context) return "none"
   context.scale(scale, scale)
@@ -122,8 +122,8 @@ export function drawCastShadows(
   context.beginPath()
   for (const polygon of polygons) {
     polygon.forEach(([x, y], index) => {
-      if (index === 0) context.moveTo(x + 200 - offset, y + 200)
-      else context.lineTo(x + 200 - offset, y + 200)
+      if (index === 0) context.moveTo(x - offset, y)
+      else context.lineTo(x - offset, y)
     })
     context.closePath()
   }

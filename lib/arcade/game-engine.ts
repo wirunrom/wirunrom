@@ -65,9 +65,18 @@ export function mountGame(root: HTMLElement, gameIndex: number): () => void {
     parent: ParentNode = root
   ): T[] => [...parent.querySelectorAll<T>(selector)]
   const seen = new WeakMap<Element, boolean>()
-  const io = new IntersectionObserver((entries) =>
+  const io = new IntersectionObserver((entries) => {
     entries.forEach((entry) => seen.set(entry.target, entry.isIntersecting))
-  )
+    if (
+      colorsDirty &&
+      entries.some(
+        (entry) => entry.target === deckStage && entry.isIntersecting
+      )
+    ) {
+      readCols()
+      if (cur?.mode === "px") cur.draw()
+    }
+  })
   const watch = <T extends Element>(element: T): T => {
     io.observe(element)
     return element
@@ -689,6 +698,7 @@ export function mountGame(root: HTMLElement, gameIndex: number): () => void {
   const pctx = context
   const P = { W: 0, H: 0, S: 4 }
   let COL = { paper: "", ink: "", sig: "", mute: "" }
+  let colorsDirty = false
   const readCols = () => {
     const cs = getComputedStyle(root)
     COL = {
@@ -697,8 +707,12 @@ export function mountGame(root: HTMLElement, gameIndex: number): () => void {
       sig: cs.getPropertyValue("--signal").trim(),
       mute: cs.getPropertyValue("--mute").trim(),
     }
+    colorsDirty = false
   }
-  scope.on(window, "arcade-theme-change", () => readCols())
+  scope.on(window, "arcade-theme-change", () => {
+    if (visible(deckStage)) readCols()
+    else colorsDirty = true
+  })
   function pxSize() {
     const r = deckStage.getBoundingClientRect()
     P.S = r.width < 600 ? 3 : 4
@@ -1905,6 +1919,7 @@ export function mountGame(root: HTMLElement, gameIndex: number): () => void {
   let lastT = 0
   function pxLoop(t: number) {
     if (cur && cur.mode === "px" && cur.on && visible(deckStage)) {
+      if (colorsDirty) readCols()
       cur.update(Math.min(50, t - (lastT || t)))
       cur.draw()
     }

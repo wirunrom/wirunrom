@@ -1,6 +1,7 @@
 "use client"
 import Image from "next/image"
 import { DeskLightSurface, useDeskLighting } from "./desk-lighting"
+import { DeskScreen } from "./desk-screen"
 import {
   IconBrandGithub,
   IconBrandNpm,
@@ -31,12 +32,6 @@ import {
   PROJECT_NOTES,
   type ProjectNote,
 } from "@/lib/arcade/projects"
-
-import {
-  FinjarWebMock,
-  FinjarMobileMock,
-  PosHeartMock,
-} from "./project-screen-mocks"
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -236,6 +231,8 @@ export function ProjectDesk({
   })
   const current = useRef<number | null>(null)
   const travelling = useRef(false)
+  const compactRendering = useRef(false)
+  const lastCameraPaint = useRef(0)
   const tilt = useRef({ rx: 0, rz: 0 })
   const fit = useRef(1)
   const entrance = useRef<gsap.core.Timeline | null>(null)
@@ -284,8 +281,16 @@ export function ProjectDesk({
       oy: innerWidth > 820 ? -(host.current?.clientHeight ?? 0) * 0.08 : 0,
     }
   }
-  function apply() {
+  function apply(force = false) {
     if (!host.current || !world.current) return
+    const now = gsap.ticker.time * 1000
+    if (
+      !force &&
+      compactRendering.current &&
+      now - lastCameraPaint.current < 1000 / 30
+    )
+      return
+    lastCameraPaint.current = now
     const c = cam.current
     world.current.style.transform = `translate(${c.ox}px,${c.oy}px) scale(${fit.current * c.k}) rotateX(${c.rx + tilt.current.rx}deg) rotateZ(${c.rz + tilt.current.rz}deg) translate3d(${-c.cx}px,${-c.cy}px,${-c.cz}px)`
   }
@@ -333,6 +338,7 @@ export function ProjectDesk({
         onComplete: () => {
           travelling.current = false
           if (host.current) host.current.dataset.cameraMoving = "false"
+          apply(true)
         },
       })
     )()
@@ -434,11 +440,24 @@ export function ProjectDesk({
     }
     LIGHTING_TOKENS.forEach((key, i) => root.style.setProperty(key, from[i]))
     root.classList.add("arcade-light-shifting")
-    lighting.current = gsap.to(root, {
+    // Interpolate a small proxy; limit DOM palette writes on touch devices.
+    const palette = Object.fromEntries(
+      LIGHTING_TOKENS.map((key, i) => [key, from[i]])
+    )
+    let lastPalettePaint = 0
+    const paintPalette = () => {
+      const now = performance.now()
+      if (compactRendering.current && now - lastPalettePaint < 1000 / 30) return
+      lastPalettePaint = now
+      for (const key of LIGHTING_TOKENS)
+        root.style.setProperty(key, palette[key])
+      refresh()
+    }
+    lighting.current = gsap.to(palette, {
       ...target,
       duration: next ? 1.35 : 1.1,
       ease: next ? "power2.out" : "power2.inOut",
-      onUpdate: refresh,
+      onUpdate: paintPalette,
       onComplete: () => {
         for (const key of LIGHTING_TOKENS) root.style.removeProperty(key)
         root.classList.remove("arcade-light-shifting")
@@ -448,6 +467,25 @@ export function ProjectDesk({
   }
   const retargetFlight = useEffectEvent((target: Camera) => fly(target))
   useEffect(() => {
+    const quality = matchMedia("(any-pointer: coarse), (max-width: 820px)")
+    const syncQuality = () => {
+      compactRendering.current = quality.matches
+      if (host.current)
+        host.current.dataset.renderQuality = quality.matches
+          ? "compact"
+          : "full"
+    }
+    syncQuality()
+    quality.addEventListener("change", syncQuality)
+    const viewport = window.visualViewport
+    const syncZoom = () => {
+      if (host.current)
+        host.current.dataset.nativeZoomed = String(
+          (viewport?.scale ?? 1) > 1.05
+        )
+    }
+    syncZoom()
+    viewport?.addEventListener("resize", syncZoom, { passive: true })
     const on = arcadeStore.get("light", true)
     lightOn.current = on
     document.documentElement.classList.toggle("arcade-dark", !on)
@@ -459,17 +497,12 @@ export function ProjectDesk({
     let previousBottomSheet = innerWidth <= 820 && innerHeight >= innerWidth
     let layoutRestore: gsap.core.Tween | null = null
     const observer = new ResizeObserver(([entry]) => {
-      if (
-        entry.contentRect.width === previousWidth &&
-        entry.contentRect.height === previousHeight
-      )
-        return
-      fit.current = Math.min(
-        entry.contentRect.width / 1560,
-        entry.contentRect.height / 1080
-      )
-      previousWidth = entry.contentRect.width
-      previousHeight = entry.contentRect.height
+      const width = Math.round(entry.contentRect.width)
+      const height = Math.round(entry.contentRect.height)
+      if (width === previousWidth && height === previousHeight) return
+      fit.current = Math.min(width / 1560, height / 1080)
+      previousWidth = width
+      previousHeight = height
       const bottomSheet = innerWidth <= 820 && innerHeight >= innerWidth
       const changedLayout = bottomSheet !== previousBottomSheet
       previousBottomSheet = bottomSheet
@@ -482,7 +515,7 @@ export function ProjectDesk({
         retargetFlight(target)
       } else {
         Object.assign(cam.current, target)
-        apply()
+        apply(true)
       }
       if (changedLayout && current.current !== null) {
         layoutRestore?.kill()
@@ -499,6 +532,8 @@ export function ProjectDesk({
     if (host.current) observer.observe(host.current)
     return () => {
       observer.disconnect()
+      quality.removeEventListener("change", syncQuality)
+      viewport?.removeEventListener("resize", syncZoom)
       layoutRestore?.kill()
       gsap.killTweensOf(camera)
       gsap.killTweensOf(pointerTilt)
@@ -701,7 +736,7 @@ export function ProjectDesk({
                     <div className="pad-t" />
                   </Box>
                   <Panel x={214} y={258} z={12} w={390} h={248} tilt={-76}>
-                    <FinjarWebMock />
+                    <DeskScreen kind="web" />
                   </Panel>
                   <Box x={644} y={362} w={118} d={62} h={10} />
                   <Panel
@@ -713,7 +748,7 @@ export function ProjectDesk({
                     tilt={-70}
                     r={13}
                   >
-                    <FinjarMobileMock />
+                    <DeskScreen kind="phone" />
                   </Panel>
                 </>
               )}
@@ -731,7 +766,7 @@ export function ProjectDesk({
                     thick={14}
                     r={8}
                   >
-                    <PosHeartMock />
+                    <DeskScreen kind="pos" />
                   </Panel>
                 </>
               )}
@@ -749,6 +784,9 @@ export function ProjectDesk({
                             width={256}
                             height={256}
                             unoptimized
+                            loading="eager"
+                            fetchPriority="high"
+                            decoding="sync"
                             alt=""
                             aria-hidden="true"
                           />
@@ -758,6 +796,9 @@ export function ProjectDesk({
                             width={462}
                             height={80}
                             unoptimized
+                            loading="eager"
+                            fetchPriority="high"
+                            decoding="sync"
                             alt=""
                             aria-hidden="true"
                           />
