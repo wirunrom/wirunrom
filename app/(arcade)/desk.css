@@ -362,8 +362,6 @@ html.arcade-dark:not(.arcade-light-shifting) .reference-desk .screen-light { dis
 /* Page pinch-zoomed elsewhere and scrolled onto the desk: unmount the 3D layers entirely (frees GPU memory) until zoom returns to 1. */
 .reference-desk .scene[data-native-zoomed="true"] .world { display: none; }
 .reference-desk .scene[data-native-zoomed="true"]::after { content: "zoomed in — pinch out to see the desk"; position: absolute; inset: 0; display: grid; place-items: center; font: 11px var(--mono, monospace); color: var(--mute); text-transform: lowercase; }
-/* Covers the one heavy theme-swap frame on touch devices (see toggle()). Opacity-only, never in the 3D tree. */
-.reference-desk .light-veil { position: absolute; inset: 0; z-index: 2; opacity: 0; pointer-events: none; }
 /* Touch pinch-to-zoom (use-desk-pinch.ts): while zoomed, one finger pans the desk instead of scrolling the page. */
 .reference-desk .scene[data-user-zoom="true"] { touch-action: none; }
 .reference-desk .zoom-reset { position: absolute; left: 0; bottom: 10px; z-index: 3; background: var(--paper); color: var(--ink); border: 1px solid var(--line); padding: 4px 10px; font-size: 10px; text-transform: lowercase; }

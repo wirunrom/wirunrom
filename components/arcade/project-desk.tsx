@@ -234,7 +234,6 @@ export function ProjectDesk({
   const travelling = useRef(false)
   const compactRendering = useRef(false)
   const tilt = useRef({ rx: 0, rz: 0 })
-  const lightVeil = useRef<HTMLDivElement>(null)
   // Touch: pinch zooms the camera inside the scene instead of the page (see use-desk-pinch.ts).
   const pinch = useDeskPinch(host)
   const fit = useRef(1)
@@ -421,30 +420,6 @@ export function ProjectDesk({
     arcadeStore.set("light", next)
     const root = document.documentElement
     lighting.current?.kill()
-    // Touch / small screens: the theme swap restyles and re-rasterizes every 3D layer in one heavy frame.
-    // Hide that frame behind a flat veil (opacity only = compositor work), swap underneath, then reveal.
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
-    const veil = lightVeil.current
-    if (compactRendering.current && !reduced && veil) {
-      const swap = () => {
-        root.classList.toggle("arcade-dark", !next)
-        root.classList.remove("arcade-light-shifting")
-        for (const key of LIGHTING_TOKENS) root.style.removeProperty(key)
-        window.dispatchEvent(new Event("arcade-theme-change"))
-      }
-      veil.style.background = getComputedStyle(root).getPropertyValue("--paper")
-      lighting.current = gsap
-        .timeline({ onInterrupt: swap })
-        .to(veil, { opacity: 1, duration: 0.14, ease: "power1.out" })
-        .add(swap)
-        // give the browser two frames to finish the heavy restyle while covered
-        .add(() => {
-          veil.style.background =
-            getComputedStyle(root).getPropertyValue("--paper")
-        }, "+=0.08")
-        .to(veil, { opacity: 0, duration: 0.3, ease: "power1.inOut" })
-      return
-    }
     const before = getComputedStyle(root)
     const from = LIGHTING_TOKENS.map((key) => before.getPropertyValue(key))
     root.classList.toggle("arcade-dark", !next)
@@ -730,7 +705,6 @@ export function ProjectDesk({
             <button onClick={close}>← back to desk</button>
           </div>
         )}
-        <div ref={lightVeil} className="light-veil" aria-hidden="true" />
         <div ref={world} className="world">
           <div
             ref={reveal}
