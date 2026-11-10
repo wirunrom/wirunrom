@@ -4,6 +4,8 @@ import { useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { useGSAP } from "@gsap/react"
+import { setupArcadeIntro } from "./arcade-intro"
+import { setupArcadePointer } from "./arcade-pointer"
 import { createLifetime } from "@/lib/arcade/lifetime"
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
@@ -26,8 +28,6 @@ export function ArcadeShell({ children }: { children: React.ReactNode }) {
         wrapper = query(".namewrap")
       const footer = query("#big"),
         footerText = query("#bigt")
-      const loader = query(".loader")
-      let active = true
       let lastY = scrollY,
         velocity = 0
       const seen = new WeakMap<Element, boolean>()
@@ -91,82 +91,7 @@ export function ArcadeShell({ children }: { children: React.ReactNode }) {
         window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" })
       })
 
-      const glyphs = "/\\_-=+*#01<>[]{}xX"
-      if (!reduced)
-        all("[data-scramble], header nav a").forEach((el) => {
-          const text = el.textContent || ""
-          scope.on(
-            el,
-            "pointerenter",
-            contextSafe!(() => {
-              const progress = { value: 0 }
-              gsap.to(progress, {
-                value: text.length,
-                duration: 0.25,
-                ease: "none",
-                onUpdate: () => {
-                  el.textContent = text
-                    .split("")
-                    .map((letter, i) =>
-                      letter === " " || i < progress.value
-                        ? letter
-                        : glyphs[Math.floor(Math.random() * glyphs.length)]
-                    )
-                    .join("")
-                },
-                onComplete: () => {
-                  el.textContent = text
-                },
-              })
-            })
-          )
-        })
-
-      const windowState = { x: 0, y: 0, scale: 0 }
-      const moveX = gsap.quickTo(windowState, "x", { duration: 0.18 })
-      const moveY = gsap.quickTo(windowState, "y", { duration: 0.18 })
-      const scale = gsap.quickTo(windowState, "scale", { duration: 0.2 })
-      scope.on(wrapper, "pointerenter", () => {
-        if (!reduced) scale(1)
-      })
-      scope.on(wrapper, "pointerleave", () => scale(0))
-      scope.on(wrapper, "pointermove", (event) => {
-        const pointer = event as PointerEvent,
-          bounds = wrapper.getBoundingClientRect()
-        moveX(pointer.clientX - bounds.left)
-        moveY(pointer.clientY - bounds.top)
-      })
-
-      if (matchMedia("(pointer: fine)").matches && !reduced) {
-        const cursor = query(".crosshair"),
-          horizontal = query(".crosshair .h"),
-          vertical = query(".crosshair .v")
-        const box = query(".crosshair .box"),
-          readout = query(".crosshair .rd"),
-          coordinates = query("[data-observer]")
-        document.documentElement.classList.add("arcade-cursor")
-        gsap.set(cursor, { display: "block" })
-        const boxX = gsap.quickTo(box, "x", { duration: 0.18 }),
-          boxY = gsap.quickTo(box, "y", { duration: 0.18 })
-        scope.on(
-          window,
-          "pointermove",
-          (event) => {
-            if (window.innerWidth <= 760) return
-            const { clientX: x, clientY: y } = event as PointerEvent
-            gsap.set(horizontal, { y })
-            gsap.set(vertical, { x })
-            boxX(x)
-            boxY(y)
-            gsap.set(readout, { x: x + 12, y: y + 10 })
-            const pad = (value: number) =>
-              String(Math.round(value)).padStart(4, "0")
-            readout.textContent = `x ${pad(x)} y ${pad(y)}`
-            coordinates.textContent = `x ${pad(x)} / y ${pad(y)}`
-          },
-          { passive: true }
-        )
-      }
+      const pointer = setupArcadePointer(host, reduced, contextSafe!)
 
       function animate(_time: number, delta: number) {
         if (document.hidden) return
@@ -182,125 +107,15 @@ export function ArcadeShell({ children }: { children: React.ReactNode }) {
           if (track.x > 0) track.x -= track.width
           gsap.set(track.track, { x: track.x })
         })
-        if (windowState.scale > 0.001) {
-          const half =
-            windowState.scale * Math.min(150, wrapper.clientHeight * 0.75)
-          negative.style.visibility = "visible"
-          negative.style.clipPath = `inset(${windowState.y - half}px ${wrapper.clientWidth - windowState.x - half}px ${wrapper.clientHeight - windowState.y - half}px ${windowState.x - half}px)`
-        } else negative.style.visibility = "hidden"
+        pointer.update()
       }
       if (!reduced) gsap.ticker.add(animate)
 
-      // Fonts are local/preloaded. Promise completion is guarded against unmount.
-      void document.fonts.ready.then(() => {
-        if (!active) return
-        context.add(() => {
-          fitNames()
-          if (reduced) {
-            gsap.set(loader, { display: "none" })
-            return
-          }
-          const counter = { value: 0 }
-          const timeline = gsap.timeline()
-          timeline.fromTo(
-            "[data-loader-row]",
-            { opacity: 0 },
-            { opacity: 1, stagger: 0.2, duration: 0.1 },
-            0
-          )
-          timeline.to(
-            counter,
-            {
-              value: 100,
-              duration: 1.8,
-              ease: "power2.out",
-              onUpdate: () => {
-                query("[data-loader-count]").textContent = String(
-                  Math.round(counter.value)
-                ).padStart(3, "0")
-              },
-            },
-            0
-          )
-          timeline.to(
-            loader,
-            {
-              clipPath: "inset(0 0 100% 0)",
-              duration: 1,
-              ease: "power3.inOut",
-              onComplete: () => {
-                gsap.set(loader, { display: "none" })
-              },
-            },
-            1.8
-          )
-          timeline.fromTo(
-            "#name .l",
-            { yPercent: 105 },
-            { yPercent: 0, duration: 1.1, stagger: 0.05, ease: "expo.out" },
-            2.05
-          )
-          gsap.fromTo(
-            "#mani .w",
-            { opacity: 0.12 },
-            {
-              opacity: 1,
-              stagger: 0.025,
-              ease: "none",
-              scrollTrigger: {
-                trigger: "#mani",
-                start: "top 85%",
-                end: "bottom 50%",
-                scrub: true,
-              },
-            }
-          )
-          const bridgeMotion = gsap.timeline({
-            scrollTrigger: {
-              trigger: ".desk-bridge",
-              start: "top 90%",
-              end: "top 55%",
-              scrub: true,
-            },
-          })
-          bridgeMotion.fromTo(
-            ".desk-link-line",
-            { scaleY: 0.25, transformOrigin: "top" },
-            { scaleY: 1, ease: "none" },
-            0
-          )
-          bridgeMotion.fromTo(
-            ".desk-link-arrow",
-            { y: -27 },
-            { y: 0, ease: "none" },
-            0
-          )
-          gsap.to(wordmark, {
-            yPercent: -18,
-            ease: "none",
-            scrollTrigger: {
-              trigger: ".hero",
-              start: "top top",
-              end: "bottom top",
-              scrub: true,
-            },
-          })
-          gsap.from(footer, {
-            yPercent: 40,
-            ease: "none",
-            scrollTrigger: {
-              trigger: "footer",
-              start: "top bottom",
-              end: "bottom bottom",
-              scrub: true,
-            },
-          })
-          ScrollTrigger.refresh()
-        })
-      })
+      const disposeIntro = setupArcadeIntro(host, context, reduced, fitNames)
 
       return () => {
-        active = false
+        disposeIntro()
+        pointer.dispose()
         scope.dispose()
         resize.disconnect()
         observer.disconnect()

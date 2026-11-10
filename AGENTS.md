@@ -15,6 +15,28 @@
 
 ## Arcade architecture
 
+- Motion modules: `arcade-shell.tsx` owns layout measurement, navigation, the
+  ticker and the scoped `useGSAP` lifecycle. `arcade-intro.ts` owns loader and
+  scroll reveals; `arcade-pointer.ts` owns hover scramble, cursor and negative
+  wordmark tracking. Both run inside the shell context; dispose listeners and
+  guard pending font promises on unmount. Keep one shared GSAP ticker.
+- Desk modules: `desk-scene.tsx` owns the scene's `.desk` markup and project
+  hit targets; keep its DOM hierarchy intact for CSS 3D. `project-dossier.tsx`
+  owns the always-mounted detail panel, its body-scroll reset and close-button
+  focus on selection changes. Keep the dossier outside the perspective scene;
+  the parent owns selection, exit timing, copy status and opener focus restoration.
+  `desk-primitives.tsx` owns Box/Panel/Cylinder markup;
+  `use-desk-camera.ts` owns scene refs, GSAP entrance/flights, pointer tilt,
+  resize retargeting, viewport gesture listeners and pinch integration. It reads
+  the parent's synchronous selection ref; use `focus(index)`, `reset()` and
+  `finishEntrance()` rather than manipulating camera refs. Mobile close uses
+  `reset({ anticipateCollapse: true })` before the drawer finishes exiting.
+  The hook disposes its observer, listeners and camera/tilt tweens on unmount.
+  `lib/arcade/desk-camera.ts` computes poses from explicit viewport/scene sizes;
+  `desk-theme.ts` owns palette transitions. `project-desk.tsx` orchestrates
+  selection and rendering, and owns cancellation of theme tweens
+  and root-token cleanup. Keep camera formulas and 3D geometry synchronized.
+
 - `components/arcade/sections.tsx`: server-rendered header, wordmark, metadata,
   tickers, statement and footer. Copy/data live in `lib/arcade/content.ts`.
 - `components/arcade/arcade-shell.tsx`: client motion boundary using `useGSAP`,
@@ -54,8 +76,16 @@
 - `components/arcade/live-readouts.tsx`: clocks and refillable matcha indicator.
 - `components/arcade/game-console.tsx`: React game shell and stable per-mount
   random selection. Strict Mode's effect replay must not deal a second game.
-- `lib/arcade/game-engine.ts`: ref-scoped canvas/3D-keypad driver preserving all
-  ten game algorithms under strict TypeScript. `lib/arcade/game-types.ts`
+- `lib/arcade/game-engine.ts`: ref-scoped game orchestration, input routing,
+  observers and frame loops. Game factories live in `lib/arcade/games/`, one per
+  game; each creates fresh state per mount. `game-runtime.ts` owns shared HUD,
+  storage, timers/unlock services and disposal; `game-keypad.ts` owns generated
+  3D buttons, `game-canvas.ts` owns pixel sizing/palette/drawing helpers, and
+  `game-controls.ts` owns shared direction/swipe calculations. Read keypad keys
+  and canvas colors through their live services (not captured arrays/objects):
+  boards and palettes can be replaced. Game timers/listeners must use the shared
+  lifetime; activity checks use `isActive(game)`. Keep registry order aligned
+  with GAME_IDS and retain algorithms, input behavior and storage keys. `lib/arcade/game-types.ts`
   defines the discriminated deck/pixel/terminal contracts, coordinates,
   matrices, pieces, upgrades and saved clicker state. Each game initializes
   typed per-mount state; the typed registry checks every game implementation.
@@ -98,7 +128,7 @@
 ## Verify
 
 - `npm run dev` → http://localhost:3000
-- `npm run typecheck`, `npm run build`, `node --test tests/arcade.test.mjs`.
+- `npm run typecheck`, `npm run build`, `npm run test:arcade`.
 - Check `/` and `/resume`, hydrated game input, GSAP/scroll, random refresh,
   unlock/storage, local fonts, and absence of hydration/console errors.
 - Force every game, including cipher, through a temporary React test page that

@@ -46,7 +46,7 @@ export const BOOT_MESSAGES = [
   "almost",
 ]
 
-// Compact-screen instructions; full game-specific help remains in the disclosure.
+// Compact-screen instructions and complementary details for the disclosure.
 export const QUICK_HELP = {
   lights: ["tap to turn the lights off", "click to turn the lights off"],
   g2048: ["swipe to merge tiles", "arrow keys to merge tiles"],
@@ -58,6 +58,49 @@ export const QUICK_HELP = {
   snake: ["swipe to turn", "arrow keys to move"],
   clicker: ["tap to ship code", "click to ship code"],
   ciph: ["decode the message", "decode the message"],
+} as const
+
+export const GAME_HELP = {
+  lights: [
+    "each key also flips its neighbours.",
+    "each key also flips its neighbours.",
+  ],
+  g2048: [
+    "equal numbers combine. reach 2048.",
+    "equal numbers combine. reach 2048. wasd also works.",
+  ],
+  mines: [
+    "numbers show adjacent mines. open every safe square.",
+    "numbers show adjacent mines. open every safe square.",
+  ],
+  whack: [
+    "you have 20 seconds; blue keys cost 3 points.",
+    "you have 20 seconds; blue keys cost 3 points.",
+  ],
+  breakout: [
+    "clear the bricks and keep the ball in play.",
+    "clear the bricks and keep the ball in play. arrow keys and space also work.",
+  ],
+  runner: [
+    "hold to jump higher. stay under blue obstacles.",
+    "hold to jump higher. stay under blue obstacles.",
+  ],
+  tetris: [
+    "tap the middle to rotate. complete rows to clear them.",
+    "↓ speeds up the fall; space drops. complete rows to clear them.",
+  ],
+  snake: [
+    "eat to grow; avoid your tail. edges wrap around.",
+    "eat to grow; avoid your tail. edges wrap around. wasd also works.",
+  ],
+  clicker: [
+    "buy upgrades to write code automatically.",
+    "buy upgrades to write code automatically.",
+  ],
+  ciph: [
+    "solve three locks. answers are lowercase.",
+    "solve three locks. answers are lowercase.",
+  ],
 } as const
 
 export const DESK_BRIDGE = "some of those things live on this desk."
