@@ -8,6 +8,7 @@ import {
 } from "@tabler/icons-react"
 import { Box, Panel, Cylinder } from "./desk-primitives"
 import { DeskLightSurface } from "./desk-lighting"
+import { DeskPaws } from "./desk-window"
 import { DeskScreen } from "./desk-screen"
 import { DESK_NOTE, type ProjectNote } from "@/lib/arcade/projects"
 
@@ -17,6 +18,8 @@ type DeskSceneProps = {
   light: boolean
   onOpen: (index: number, opener?: HTMLElement) => void
   onToggleLight: () => void
+  onLookUp: (opener?: HTMLElement) => void
+  windowOpen: boolean
 }
 
 /** Preserve this DOM hierarchy: wrappers can flatten the CSS 3D scene. */
@@ -26,6 +29,8 @@ export function DeskScene({
   light,
   onOpen,
   onToggleLight,
+  onLookUp,
+  windowOpen,
 }: DeskSceneProps) {
   function group(index: number, children: ReactNode, cls = "") {
     const entry = index === -1 ? DESK_NOTE : projects[index]
@@ -56,7 +61,7 @@ export function DeskScene({
     )
   }
   return (
-    <div className="desk">
+    <div className="desk" inert={windowOpen}>
       <div className="floor" />
       <Box x={0} y={0} z={-34} w={1200} d={700} h={34} />
       <div className="glow" />
@@ -64,6 +69,10 @@ export function DeskScene({
         <DeskLightSurface x={180} y={222} z={0.5} />
       </div>
       <div className="desk-cast" aria-hidden="true" />
+      <DeskPaws
+        enabled={selected === null && !windowOpen}
+        onFollow={onLookUp}
+      />
       <div
         className="lamp"
         role="button"

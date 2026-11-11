@@ -272,7 +272,7 @@ see those vars and `font-family` silently falls back to serif (Times).
   uses Chiang Mai time (or `?hour=11.9pm` / `?hour=11.9&period=pm` for comparison), and crossfades cached
   day/moon pane images using the same `--lamp-power` as the palette and cast shadows. Apply the initial pane position without transition and omit the image on surfaces outside its footprint (including front-row folders).
   The small time label follows the supplied reference; cast shadows use the silhouette renderer below.
-  Room sky/shafts are intentionally omitted so the scene blends into the page. Preserve the existing
+  The idle desk omits room sky/shafts; the window view mounts on demand. Preserve the existing
   default Light preference, continuous root palette tween and mobile dossier.
 
 - Arcade clocks display 12-hour time with AM/PM. Lighting previews accept 0–12
@@ -336,3 +336,21 @@ see those vars and `font-family` silently falls back to serif (Times).
   displayed. Both exist only while `html.arcade-light-shifting` (desktop cross-fade).
 - During camera flights `.world` gets `will-change: transform` so layers are not
   re-rasterized each frame; it is removed when the flight ends so text re-sharpens.
+
+- Cat/window extension (`wirunrom-desk-cat-window.zip`): `desk-window.tsx`
+  owns the keyboard/touch paw trail and the lazily mounted 3D window. Follow
+  the prints to open it; tap outside the window or press Escape to return and
+  restore paw focus. Keep the window free of look-up/back/light buttons and
+  visible captions (owner preference). Camera sentinel -2 is window-only;
+  project counts and note sentinel -1 stay unchanged. `windowCamera()` fits
+  the sill independently of dossier offsets and retargets on resize.
+  `desk-cat.ts` and `desk-sky.ts` port the supplied tiny pixel renderers. Their
+  shared GSAP ticker callback runs at ~11fps, pauses offscreen/hidden/zoomed,
+  and is removed on unmount; reduced motion draws static poses. Sky time uses
+  the same Chiang Mai preview parser as desk light; lamp mode sets day/night.
+  Keep the desk inert while looking up, preserve 3D ancestors, and mount no
+  room canvases in the idle desk.
+- POS menu thumbnails are baked 32×22 PNGs from the supplied symbols by
+  `npm run generate:project-menu-art`. After changing them, regenerate the two
+  POS screen WebPs using `public/projects/screens/README.md`. Only the baked
+  screens mount inside the moving monitor; menu source mocks remain offline.

@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 // Decorative app previews adapted from wirunrom-desk-fix-mock.zip.
 // Every amount, name and product below is sample data.
 
@@ -423,13 +425,7 @@ export function PosHeartMock() {
             </div>
             <div className="g">
               <div className="card sel">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--ink) 0 25%, var(--signal) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={0} />
                 <span className="bdg">{"1"}</span>
                 <div className="nm2">{"Basil chicken rice + egg"}</div>
                 <div className="r">
@@ -438,13 +434,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card sel">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--mute) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={1} />
                 <span className="bdg">{"2"}</span>
                 <div className="nm2">{"Hainanese chicken rice"}</div>
                 <div className="r">
@@ -453,13 +443,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card sel">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--ink) 0 25%, var(--mute) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={2} />
                 <span className="bdg">{"3"}</span>
                 <div className="nm2">{"Chicken rice set (large)"}</div>
                 <div className="r">
@@ -468,13 +452,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card off">
-                <div
-                  className="th blank"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--paper-2) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={3} />
                 <div className="nm2">{"Pad thai with prawns"}</div>
                 <div className="r">
                   <span className="sg">{"paused"}</span>
@@ -482,13 +460,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--ink) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={4} />
                 <div className="nm2">{"Iced americano"}</div>
                 <div className="r">
                   <span className="mu"></span>
@@ -496,13 +468,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card sel">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--signal) 0 25%, var(--paper) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={5} />
                 <span className="bdg">{"2"}</span>
                 <div className="nm2">{"Iced Thai tea"}</div>
                 <div className="r">
@@ -511,13 +477,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card sel">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--signal) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={6} />
                 <span className="bdg">{"1"}</span>
                 <div className="nm2">{"Still water 600 ml"}</div>
                 <div className="r">
@@ -526,13 +486,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card">
-                <div
-                  className="th blank"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--paper-2) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={7} />
                 <div className="nm2">{"Soda 325 ml"}</div>
                 <div className="r">
                   <span className="sg">{"4 left"}</span>
@@ -540,13 +494,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card off">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--mute) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={8} />
                 <div className="nm2">{"Paper towels, 6 rolls"}</div>
                 <div className="r">
                   <span className="sg">{"sold out"}</span>
@@ -554,13 +502,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--ink) 0 25%, var(--paper) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={9} />
                 <div className="nm2">{"Laundry detergent 2.7 kg"}</div>
                 <div className="r">
                   <span className="sg">{"6 left"}</span>
@@ -568,13 +510,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card">
-                <div
-                  className="th"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--signal) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={10} />
                 <div className="nm2">{"Pandan custard toast"}</div>
                 <div className="r">
                   <span className="mu"></span>
@@ -582,13 +518,7 @@ export function PosHeartMock() {
                 </div>
               </div>
               <div className="card">
-                <div
-                  className="th blank"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(var(--paper-2) 0 25%, var(--paper-2) 0 50%) 0 0 / 14px 14px",
-                  }}
-                ></div>
+                <ProductThumb index={11} />
                 <div className="nm2">{"Potato chips 75 g"}</div>
                 <div className="r">
                   <span className="mu">{"21 left"}</span>
@@ -611,6 +541,24 @@ export function PosHeartMock() {
           <span className="n">{"14:36"}</span>
         </div>
       </div>
+    </div>
+  )
+}
+
+function ProductThumb({ index }: { index: number }) {
+  return (
+    <div className="th menu-thumb">
+      {(["light", "dark"] as const).map((theme) => (
+        <Image
+          key={theme}
+          src={`/projects/menu/${index}-${theme}.png`}
+          className={`menu-${theme}`}
+          width={32}
+          height={22}
+          unoptimized
+          alt=""
+        />
+      ))}
     </div>
   )
 }

@@ -365,3 +365,35 @@ html.arcade-dark:not(.arcade-light-shifting) .reference-desk .screen-light { dis
 /* Touch pinch-to-zoom (use-desk-pinch.ts): while zoomed, one finger pans the desk instead of scrolling the page. */
 .reference-desk .scene[data-user-zoom="true"] { touch-action: none; }
 .reference-desk .zoom-reset { position: absolute; left: 0; bottom: 10px; z-index: 3; background: var(--paper); color: var(--ink); border: 1px solid var(--line); padding: 4px 10px; font-size: 10px; text-transform: lowercase; }
+
+/* Cat-window extension: only flat faces carry opacity; the room retains depth. */
+.reference-desk .desk-room { position: absolute; left: 0; top: 0; transform-style: preserve-3d; }
+.reference-desk .desk-room :is(.pl, .bx) { transform-style: preserve-3d; }
+.reference-desk .desk-room div { position: absolute; }
+.reference-desk .desk-room .pl > .face { overflow: visible; border: 0; background: transparent !important; box-shadow: none; }
+.reference-desk .desk-room > .pl:first-child > .face { background: radial-gradient(closest-side, var(--paper-2) 55%, transparent) !important; }
+.reference-desk .window-frame { box-sizing: content-box; border: 9px solid var(--ink); outline: 1.5px solid var(--ink); outline-offset: 7px; background: #0c0c0e; }
+.reference-desk .window-frame canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.reference-desk .window-mullion { position: absolute; top: 0; bottom: 0; width: 9px; margin-left: -4.5px; background: var(--ink); pointer-events: none; }
+.reference-desk .window-crossbar { position: absolute; top: 50%; left: 0; right: 0; height: 9px; margin-top: -4.5px; background: var(--ink); pointer-events: none; }
+.reference-desk .sill-cat { display: block; padding: 0; width: 100%; height: 100%; border: 0; background: transparent; cursor: pointer; }
+.reference-desk .sill-cat canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.reference-desk .paws { left: 0; top: 0; width: 330px; height: 700px; transform: translateZ(.7px); cursor: pointer; pointer-events: none; }
+.reference-desk .paw { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; display: grid; place-items: center; color: var(--ink); opacity: .2; }
+.reference-desk .paw svg { width: 22px; height: 25px; overflow: visible; fill: currentColor; }
+.reference-desk .paws:hover .paw, .reference-desk .paws:focus-visible .paw { opacity: .4; }
+.reference-desk .paws:focus-visible { outline: none; }
+.reference-desk .paws:focus-visible .paw { outline: 2px solid var(--signal); outline-offset: 2px; }
+.reference-desk .paws[aria-disabled="true"] { pointer-events: none; }
+.reference-desk .scene.window-open .desk { pointer-events: none; }
+.reference-desk .scene.window-open .paws { visibility: hidden; }
+.reference-desk .scene.window-open .timechip { visibility: hidden; }
+.reference-desk .pos .card .menu-thumb { position: relative; overflow: hidden; background: var(--paper-2); }
+.reference-desk .menu-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
+.reference-desk .menu-dark { display: none; }
+html.arcade-dark .reference-desk .menu-dark { display: block; }
+html.arcade-dark .reference-desk .menu-light { display: none; }
+.reference-desk .paws .paw { pointer-events: auto; }
+.reference-desk .paws[aria-disabled="true"] .paw { pointer-events: none; }
+
+.reference-desk .scene:focus { outline: none; }

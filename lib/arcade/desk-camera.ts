@@ -55,3 +55,20 @@ export function projectCamera(
     oy: bottomSheet ? -scene.height * 0.32 : 0,
   }
 }
+
+/** Window view has no dossier offset and fits the whole sill on compact screens. */
+export function windowCamera(scene: Viewport, fit: number): Camera {
+  return {
+    cx: 600,
+    cy: -40,
+    cz: 567,
+    rx: 87,
+    rz: 0,
+    k: Math.min(
+      (scene.width * (scene.width < 600 ? 0.86 : 0.5)) / (556 * fit),
+      (scene.height * 0.55) / (314 * fit)
+    ),
+    ox: 0,
+    oy: 0,
+  }
+}

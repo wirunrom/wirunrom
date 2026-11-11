@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "generate:project-menu-art": "node scripts/generate-project-menu-art.mjs",
     "generate:project-codes": "node scripts/generate-project-codes.mjs",
     "dev": "next dev",
     "build": "next build",

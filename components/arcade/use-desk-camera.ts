@@ -13,6 +13,7 @@ import { useGSAP } from "@gsap/react"
 import {
   homeCamera,
   projectCamera,
+  windowCamera,
   type Camera,
 } from "@/lib/arcade/desk-camera"
 import { useDeskPinch } from "./use-desk-pinch"
@@ -85,6 +86,7 @@ export function useDeskCamera(current: RefObject<number | null>) {
   }
   function destination(index: number): Camera {
     const bounds = host.current!.getBoundingClientRect()
+    if (index === -2) return windowCamera(bounds, fit.current)
     return projectCamera(
       index,
       { width: innerWidth, height: innerHeight },

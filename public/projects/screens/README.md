@@ -18,3 +18,12 @@ To regenerate after editing the source mocks:
 
 The six images total approximately 240 KiB. Screen containers are decorative;
 never replace the actual detail text, links, or keyboard controls with captures.
+
+## POS menu illustrations
+
+`npm run generate:project-menu-art` bakes the supplied cat-window ZIP's twelve
+menu symbols to `public/projects/menu/{index}-{light,dark}.png` (32×22).
+`project-screen-mocks.tsx` uses these flat pixel images in place of the old
+checkerboards. Regenerate them before recapturing the two POS screens. The
+source generator uses Sharp from the existing Next.js dependency tree. No
+thumbnail canvas or SVG parsing ships in the moving desk.

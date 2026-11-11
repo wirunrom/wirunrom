@@ -1,4 +1,5 @@
 "use client"
+import { DeskWindow } from "./desk-window"
 import { DeskScene } from "./desk-scene"
 import { ProjectDossier } from "./project-dossier"
 import { useDeskCamera } from "./use-desk-camera"
@@ -19,6 +20,8 @@ export function ProjectDesk({
 }: {
   projects?: ProjectNote[]
 }) {
+  const [windowOpen, setWindowOpen] = useState(false)
+  const windowOpener = useRef<HTMLElement | null>(null)
   const current = useRef<number | null>(null)
   const camera = useDeskCamera(current)
   const { host, world, reveal, veil } = camera
@@ -36,6 +39,7 @@ export function ProjectDesk({
   const lightOn = useRef(true)
   const panelWasOpen = useRef(false)
   function open(index: number, button?: HTMLElement) {
+    setWindowOpen(false)
     camera.finishEntrance()
     closeDelay.current?.kill()
     closeDelay.current = null
@@ -62,6 +66,29 @@ export function ProjectDesk({
           : "smooth",
       })
   }
+  function lookUp(button?: HTMLElement) {
+    if (current.current !== null) return
+    camera.finishEntrance()
+    current.current = -2
+    windowOpener.current = button ?? null
+    setWindowOpen(true)
+    camera.focus(-2)
+    host.current?.scrollIntoView({
+      block: "center",
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    })
+  }
+  function lookDown() {
+    current.current = null
+    setWindowOpen(false)
+    camera.reset()
+  }
+  useEffect(() => {
+    if (windowOpen) host.current?.focus({ preventScroll: true })
+    else windowOpener.current?.focus({ preventScroll: true })
+  }, [windowOpen, host])
   function step(direction: -1 | 1) {
     const active = current.current
     open(
@@ -166,6 +193,10 @@ export function ProjectDesk({
       aria-label="Project desk"
       onKeyDown={(e) => {
         e.stopPropagation()
+        if (windowOpen) {
+          if (e.key === "Escape") lookDown()
+          return
+        }
         if (selected === null) return
         if (e.key === "Escape") close()
         if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
@@ -176,11 +207,17 @@ export function ProjectDesk({
     >
       <div
         ref={host}
+        tabIndex={-1}
         {...camera.sceneHandlers}
-        className={`scene ${work ? "focused" : ""} ${closing ? "closing" : ""}`}
+        className={`scene ${windowOpen ? "window-open" : ""} ${work ? "focused" : ""} ${closing ? "closing" : ""}`}
         onClick={(e) => {
-          if (!(e.target as Element).closest(".it,.lamp,.detail,.crumb"))
-            close()
+          if (
+            e.target instanceof Element &&
+            !e.target.closest(".it,.lamp,.detail,.crumb,.paws,.desk-room")
+          ) {
+            if (windowOpen) lookDown()
+            else close()
+          }
         }}
       >
         <div
@@ -227,12 +264,15 @@ export function ProjectDesk({
               transformStyle: "preserve-3d",
             }}
           >
+            {windowOpen && <DeskWindow light={light} />}
             <DeskScene
               projects={projects}
               selected={selected}
               light={light}
               onOpen={open}
               onToggleLight={toggle}
+              onLookUp={lookUp}
+              windowOpen={windowOpen}
             />
           </div>
         </div>

@@ -206,3 +206,11 @@ top margins keep the handoff compact. The original statement typography stays.
 - Device screens use the revised `wirunrom-desk-fix-mock.zip` mockups: Finjar web/mobile balance, transactions and forecast; POS Heart sale toolbar, bill, categories and products. Native decorative JSX renders sample data at 2× inside clipped glass, using existing local fonts and light/dark tokens. Desk camera, dossier and lamp behavior remain independent.
 
 - Lamp lighting applies to the whole arcade palette, including body, header, statement and footer. Default is Light unless a saved choice exists. GSAP interpolates root colors and lamp power for 1100ms off / 1350ms on; desk light contracts/fades as screens gain glow. Never fade the preserve-3d scene itself. Reduced motion changes immediately.
+
+- The cat-window reference adds a faint trail of ink paw prints across the
+  left desk edge. Following it lights the pads in signal blue and flies to a
+  six-pane window: dithered blue sky/green hills by day, ink/blue/paper sky by
+  night, with a chubby orange pixel tabby on the sill. The room mounts only in
+  this view. No visible captions or window toolbar; outside tap/Escape returns
+  to the desk. The lamp retains control of day/night. POS product tiles use
+  matching dithered menu illustrations, baked into the two screen textures.
