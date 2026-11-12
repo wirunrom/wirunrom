@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useEffectEvent, useRef } from "react"
+import { useEffect, useEffectEvent, useRef, type RefObject } from "react"
 import { gsap } from "gsap"
 import { Box, Panel } from "./desk-primitives"
 import { makeCat } from "@/lib/arcade/desk-cat"
@@ -114,13 +114,20 @@ export function DeskPaws({
   )
 }
 
-export function DeskWindow({ light }: { light: boolean }) {
+export function DeskWindow({
+  light,
+  host,
+}: {
+  light: boolean
+  host: RefObject<HTMLDivElement | null>
+}) {
   const skyCanvas = useRef<HTMLCanvasElement>(null),
     catCanvas = useRef<HTMLCanvasElement>(null)
   const cat = useRef<ReturnType<typeof makeCat> | null>(null)
   const isDay = useEffectEvent(() => light)
   useEffect(() => {
-    if (!skyCanvas.current || !catCanvas.current) return
+    const scene = host.current
+    if (!scene || !skyCanvas.current || !catCanvas.current) return
     const skyView = makeDeskSky(skyCanvas.current),
       tabby = makeCat(catCanvas.current, { wander: true, hidden: true })
     cat.current = tabby
@@ -132,6 +139,42 @@ export function DeskWindow({ light }: { light: boolean }) {
     let elapsed = 0,
       lastTime = performance.now(),
       arrived = false
+    function prepareSky(day: boolean) {
+      const changed =
+        minute !== Math.floor(Date.now() / 60000) || previousDay !== day
+      if (!changed) return false
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Bangkok",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      }).formatToParts(new Date())
+      const hour =
+        previewHour(new URLSearchParams(location.search)) ??
+        Number(parts.find((p) => p.type === "hour")?.value ?? 0) +
+          Number(parts.find((p) => p.type === "minute")?.value ?? 0) / 60
+      skyView.prepare(hour, day)
+      minute = Math.floor(Date.now() / 60000)
+      previousDay = day
+      return true
+    }
+    // A transformed canvas can be reported outside the viewport even while
+    // its 3D face is visible. Always populate its backing bitmap first.
+    const initialDay = isDay()
+    prepareSky(initialDay)
+    skyView.frame(0)
+    if (reduced.matches || !initialDay) {
+      tabby.settle(initialDay, 100)
+      tabby.tick(0, initialDay)
+      arrived = true
+    }
+    // Observe the untransformed viewport, never a plane moving in CSS 3D.
+    const bounds = scene.getBoundingClientRect()
+    visible =
+      bounds.bottom > 0 &&
+      bounds.top < innerHeight &&
+      bounds.right > 0 &&
+      bounds.left < innerWidth
     function frame() {
       const now = performance.now()
       if (
@@ -146,23 +189,7 @@ export function DeskWindow({ light }: { light: boolean }) {
       elapsed += Math.min(100, now - lastTime)
       lastTime = now
       const day = isDay()
-      const changed =
-        minute !== Math.floor(Date.now() / 60000) || previousDay !== day
-      if (changed) {
-        const parts = new Intl.DateTimeFormat("en-GB", {
-          timeZone: "Asia/Bangkok",
-          hour: "2-digit",
-          minute: "2-digit",
-          hourCycle: "h23",
-        }).formatToParts(new Date())
-        const hour =
-          previewHour(new URLSearchParams(location.search)) ??
-          Number(parts.find((p) => p.type === "hour")?.value ?? 0) +
-            Number(parts.find((p) => p.type === "minute")?.value ?? 0) / 60
-        skyView.prepare(hour, day)
-        minute = Math.floor(Date.now() / 60000)
-        previousDay = day
-      }
+      const changed = prepareSky(day)
       if (!arrived && (reduced.matches || !day || elapsed >= 1150)) {
         if (reduced.matches || !day) tabby.settle(day, 100)
         else tabby.jumpIn(elapsed, day, 100)
@@ -177,14 +204,14 @@ export function DeskWindow({ light }: { light: boolean }) {
       visible = entry.isIntersecting
       lastTime = performance.now()
     })
-    observer.observe(skyCanvas.current)
+    observer.observe(scene)
     gsap.ticker.add(frame)
     return () => {
       observer.disconnect()
       gsap.ticker.remove(frame)
       cat.current = null
     }
-  }, [])
+  }, [host])
   function pokeCat() {
     const tabby = cat.current
     if (!tabby) return

@@ -264,7 +264,7 @@ export function ProjectDesk({
               transformStyle: "preserve-3d",
             }}
           >
-            {windowOpen && <DeskWindow light={light} />}
+            {windowOpen && <DeskWindow light={light} host={host} />}
             <DeskScene
               projects={projects}
               selected={selected}

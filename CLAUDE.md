@@ -346,7 +346,10 @@ see those vars and `font-family` silently falls back to serif (Times).
   the sill independently of dossier offsets and retargets on resize.
   `desk-cat.ts` and `desk-sky.ts` port the supplied tiny pixel renderers. Their
   shared GSAP ticker callback runs at ~11fps, pauses offscreen/hidden/zoomed,
-  and is removed on unmount; reduced motion draws static poses. Sky time uses
+  and is removed on unmount; reduced motion draws static poses. Paint the initial
+  sky bitmap synchronously and observe the flat scene host for visibility,
+  never the transformed sky canvas: a false offscreen report otherwise leaves
+  both sky and cat blank on mobile. Sky time uses
   the same Chiang Mai preview parser as desk light; lamp mode sets day/night.
   Keep the desk inert while looking up, preserve 3D ancestors, and mount no
   room canvases in the idle desk.
