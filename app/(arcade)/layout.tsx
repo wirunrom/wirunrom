@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
+import { Analytics } from "@vercel/analytics/next"
 import "./arcade.css"
 
 const archivo = localFont({
@@ -36,6 +37,7 @@ export default function ArcadeLayout({
     <html lang="en">
       <body className={`${archivo.variable} ${geist.variable} arcade-body`}>
         {children}
+        <Analytics />
       </body>
     </html>
   )

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Syne, JetBrains_Mono } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
 
 import "../globals.css"
 import { cn } from "@/lib/utils"
@@ -34,6 +35,7 @@ export default function RootLayout({
         className={cn("bento ds", syne.variable, jetbrainsMono.variable)}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   )
